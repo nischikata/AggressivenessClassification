@@ -11,5 +11,4 @@ def replace_dont(string_sent):
     'Please do not do it.'
     """
     i = string_sent.lower().find("don't")
-    new = string_sent[:i] + string_sent[i:].replace("on't", "o not", 1)  # only replace the first occurrence
-    return new
+    return string_sent[:i] + string_sent[i:].replace("on't", "o not", 1)  # only replace the first occurrence
