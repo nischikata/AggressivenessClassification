@@ -2,3 +2,10 @@
 Data/aggressive
 Data/not_aggressive
 /Tests/.cache/
+/Tests/Testdata/aggressive/
+/Tests/Testdata/not_aggressive/
+/Tests/Testdata/
+.DS_Store
+Data/.DS_Store
+*.pyc
+subjectivity_clues_hltemnlp05/
