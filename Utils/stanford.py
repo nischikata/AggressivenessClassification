@@ -3,8 +3,8 @@ from nltk.tag import StanfordPOSTagger
 
 # ---- 1. SETUP ENVIRONMENT VARIABLES ----
 
-sjar = '/Users/nischikata/PycharmProjects/stanford-postagger-full-2015-12-09/stanford-postagger.jar'
-model = '/Users/nischikata/PycharmProjects/stanford-postagger-full-2015-12-09/models/english-left3words-distsim.tagger'
+sjar = 'stanford-postagger-full-2015-12-09/stanford-postagger.jar'
+model = 'stanford-postagger-full-2015-12-09/models/english-left3words-distsim.tagger'
 
 
 # ---- 2. CREATE POS TAGGER ----

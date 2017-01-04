@@ -5,18 +5,18 @@ from nltk.tree import Tree
 from Utils.text_mods import replace_dont
 from Utils.stanford import POS_TAGGER
 import sys
-print(sys.version_info[0])
+#print(sys.version_info[0])
 
 # should expect a minimum of two words (incl. punctuation)
 def is_imperative(string_sent):
-    print("\n---------------------------------")
+    #print("\n---------------------------------")
     imperative = False
     strength = 0
     polite = string_sent.lower().find("please") >= 0  # refers to the empathic do or use of please
     indirect = False  # refers to presence of question tag
     tokenized_sent = (word_tokenize(replace_dont(string_sent)))
     tagged_sent = POS_TAGGER.tag(tokenized_sent)
-    print(tagged_sent)
+    #print(tagged_sent)
 
 
     if(len(tagged_sent) > 1): # minimum sentence example: "Go!"
@@ -74,6 +74,7 @@ def is_imperative(string_sent):
     return {'imperative': imperative, 'polite': polite, 'indirect': indirect, 'strength': strength}
 
 
+
 def chunk_imperative(tagged_sent):
 
     chunkGram = r"""VB-Phrase: {<DT><,>*<VB>}
@@ -85,5 +86,9 @@ def chunk_imperative(tagged_sent):
 
     chunkParser = RegexpParser(chunkGram)
     chunked = chunkParser.parse(tagged_sent)
-    print(chunked)
+    #print(chunked)
     return(chunked)
+    
+    
+print("hello imperative")
+print(is_imperative("This is so cool!"))

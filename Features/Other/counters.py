@@ -129,6 +129,7 @@ def get_sent_counts(comment):
 
     return {"sent_count": len(sents), "shortest": shortest, "longest": longest, "avg": avg, "median": median}
 
+"""
 print(tokenizer.tokenize("Hello!! How are you? What's your name? Nice to meet you. A"))
 
 print(get_sents("Hello hello.-"))
@@ -137,7 +138,7 @@ print(get_sents("Hello.. Nice to meet you!!!"))
 print(get_sents("Hello... Nice to meet you!!!"))
 print(get_sents("Hello..... Nice to meet you!!!"))
 print(get_sents("Hey; Here you go."))
-"""
+
 # returns a list of raw sentences
 def get_raw_sentences(fileid): # works
     data = corpus.raw(fileid)
