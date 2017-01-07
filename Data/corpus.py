@@ -18,28 +18,14 @@ corpus = CategorizedPlaintextCorpusReader('.', r'(?!\.).*\.txt', word_tokenizer=
 # Getting RAW SENTENCES from RAW Comment seee: http://stackoverflow.com/a/4576110/4866678
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-# returns a list of raw sentences
-def get_raw_sentences(fileid): # works mostly but problem with last sentence ending with ?! !! (multiple punct) TODO: fix or remove
-    data = corpus.raw(fileid)
-    return tokenizer.tokenize(data)
+
+
 
 def get_raw_paragraph(fileid): #TODO test if this works with yahoo! corpus as well (encoding might differ)
     data = corpus.raw(fileid)
     return data.split(u"\r\n \r\n")
 
-def get_sents(comment):
-    return tokenizer.tokenize(comment)
 
-
-
-
-sents = get_raw_sentences('not_aggressive/Test.txt')
-print("\n\n\n")
-print(sents)
-print(type(sents))
-print("\n\n\n")
-print(get_sents("He's here!! Omg!! He's here, right? wow!!! "))
-print("\n\n")
 
 # ACCESS all FILEIDS:
 # corpus.fileids([category])  # category is optional
@@ -75,28 +61,24 @@ comment
 
 
 # ITERATE OVER FILEIDS
-for fileid in corpus.fileids()[1:2]:
-    print(fileid)
-    print(type(fileid))
-    print(len(corpus.raw(fileid)))
-    print(corpus.raw(fileid))
-
-    #sents = get_raw_sentences(fileid)
-    sents = get_raw_paragraph(fileid)
-   # print("SENT:  " + "\nSENT:  ".join(sents))
-    words = corpus.words(fileid)
-    print(words)
-    print(*words, sep='\n')
+# for fileid in corpus.fileids()[1:2]:
+#     print(fileid)
+#     print(type(fileid))
+#     print(len(corpus.raw(fileid)))
+#     print(corpus.raw(fileid))
+#
+#     #sents = get_raw_sentences(fileid)
+#     sents = get_raw_paragraph(fileid)
+#    # print("SENT:  " + "\nSENT:  ".join(sents))
+#     words = corpus.words(fileid)
+#     print(words)
+#     print(*words, sep='\n')
 
 
 """
 tags = POS_TAGGER.tag(corpus.words(corpus.fileids()[1]))
 tags1 = POS_TAGGER.tag(word_tokenize(corpus.raw(corpus.fileids()[1])))
-tags2 = POS_TAGGER.tag("This ni99er doesn't know $hit?!".split())
 print(*tags, sep='\n')
 print ("======\n")
 print(*tags1, sep='\n')
-
-print ("=======\n")
-print(*tags2, sep='\n')
 """

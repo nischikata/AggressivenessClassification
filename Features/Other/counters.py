@@ -4,7 +4,7 @@ from string import punctuation
 from collections import Counter
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
-from Utils.text_mods import strip_punctuation
+from Utils.text_mods import strip_punctuation, get_sents
 #from Data.corpus import corpus
 #import Data.corpus as corpus
 
@@ -39,7 +39,7 @@ WORD_LENGHT_THRESHOLD = 7
 def get_wordcounts(text):
     # approach one: strip punctuation
     modified = text.replace("'", " ")
-    words = strip_punctuation(modified, '!"\'()-./:;,?[\\]`').split()
+    words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
 
     if len(words) == 0: #returns None if no words left after stripping punctuation.
         return
@@ -101,54 +101,30 @@ def sent_count(comment):
     return comment.__len__()
 
 
-#
-def get_sents(comment):
-    """
-    :param comment: "Hello. Nice to meet you!!!"
-    :return: ['Hello.', 'Nice to meet you!!!']
-    """
-    sents = tokenizer.tokenize(comment)
-    if len(sents) > 1 and len(sents[-1]) == 1 and sents[-1] in ".?!":
-        # if the last element in list is not a real sentence but punctuation, move and append it to the previous sentence element in list
-        pop = sents.pop()
-        sents[-1] += pop
-    return sents
 
-
+ # Returns sentence stats:
+ # number of sentences;
+ # shortest and longest sent, average and median sent length
+ # - length measured in tokens without punctuation.
 def get_sent_counts(comment):
 
-    shortest = longest = avg = median = 0.0
-    sents = get_sents()
+    sents = get_sents(comment)
+    sent_lengths = []
 
-    #TODO: shortest sent in words
-    #TODO: longest sent in tokens
-    #TODO: avg sent length
-    #TODO: median sent length
 
-    #TODO: preprocess: strip punctuation
+    for sent in sents:
+            modified = sent.replace("'", " ")
+            words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
+            l = len(words)
+            sent_lengths.append(l)
 
-    return {"sent_count": len(sents), "shortest": shortest, "longest": longest, "avg": avg, "median": median}
+    longest = max(sent_lengths)
+    shortest = min(sent_lengths)
+    med = median(sent_lengths)
+    avg = average(sent_lengths)
 
-"""
-print(tokenizer.tokenize("Hello!! How are you? What's your name? Nice to meet you. A"))
+    return {"sent_count": len(sents), "shortest": shortest, "longest": longest, "avg": avg, "median": med}
 
-print(get_sents("Hello hello.-"))
-print(get_sents("Hello. Nice to meet you!!!"))
-print(get_sents("Hello.. Nice to meet you!!!"))
-print(get_sents("Hello... Nice to meet you!!!"))
-print(get_sents("Hello..... Nice to meet you!!!"))
-print(get_sents("Hey; Here you go."))
-
-# returns a list of raw sentences
-def get_raw_sentences(fileid): # works
-    data = corpus.raw(fileid)
-    return tokenizer.tokenize(data)
-
-def get_raw_paragraph(fileid): #TODO test if this works with yahoo! corpus as well (encoding might differ)
-    data = corpus.raw(fileid)
-    return data.split(u"\r\n \r\n")
-
-"""
 
 
 
