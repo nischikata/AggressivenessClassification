@@ -1,4 +1,5 @@
 from Features.Grammatical.imperative import is_imperative
+from Utils.stanford import get_tagged_sent
 import pytest
 
 # def test_polite():
@@ -16,7 +17,7 @@ import pytest
     ("Would you just look at this beautiful book?!", False),
 ])
 def test_imperative(test_input, expected):
-    assert is_imperative(test_input)["imperative"] == expected
+    assert is_imperative(get_tagged_sent(test_input))["imperative"] == expected
 
 
 @pytest.mark.parametrize("polite_input, expected_politeness", [
@@ -28,4 +29,6 @@ def test_imperative(test_input, expected):
 ])
 
 def test_polite(polite_input, expected_politeness):
-    assert is_imperative(polite_input)["polite"] == expected_politeness
+    assert is_imperative(get_tagged_sent(polite_input))["polite"] == expected_politeness
+
+# make sure working directory is set to root (/Users/nischikata/PycharmProjects/AggressivenessClassification/)

@@ -133,8 +133,21 @@ text = "Swore sworn".split(" ")
 REMINDER:
 When changing anything in the subjectivity_dictionary build DELETE THE PICKLE and rebuild! ;-)
 
+ P R O B L E M S   and   C H A L L E N G E S :
 
-PROBLEM:
+SOLVED:
+some words are being marked as stemmed (e.g. "survive", "surprise"), but the stemmed version of survive is "surviv"
+which means they appear both as stemmed but they do not match!
+... might need to do some preprocessing when building my subjectivity_lexicon.. -> letting the
+stemmer stem at least those, that are marked as stemmed...
+
+SOLVED:
+out of place character in the dataset removed
+
+SOLVED:
+converted POS Tags into corresponding PENN TREEBANK II CONSTITUENT TAGS
+
+SOLVED:
 since there may be multiple versions of the identical word (see entries for "suspicious") but with different
 POS Tags some entries will be simply OVERWRITTEN... this does matters if the POS Tags are used as source
 of information and especially if the polarity of the word is tied to the POS Tag, as well as the subjectivity type
@@ -150,19 +163,6 @@ POLARITY CONFLICT:  precious    neutral    positive
 POLARITY CONFLICT:  presum    neutral    negative
 
 ---> This means: POS TAGS must be considered as well, including their corresponding strength and polarity
-
-
-SOLVED:
-some words are being marked as stemmed (e.g. "survive", "surprise"), but the stemmed version of survive is "surviv"
-which means they appear both as stemmed but they do not match!
-... I might need to do some preprocessing when building my subjectivity_lexicon.. -> letting the
-stemmer stem at least those, that are marked as stemmed...
-
-SOLVED:
-out of place character in the dataset removed
-
-SOLVED:
-converted POS Tags into corresponding PENN TREEBANK II CONSTITUENT TAGS
 
 
 NEXT PROBLEM:

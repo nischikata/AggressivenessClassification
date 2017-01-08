@@ -30,4 +30,26 @@ SETTING UP THE PROJECT
     Read more about virtualenv here:
     http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenvironments-ref
     
-    
+
+====================================================================================
+
+   PROBLEMS ?
+   Got an error message that looks something like this?
+
+   Resource u'corpora/brown' not found.  Please use the NLTK
+     Downloader to obtain the resource:  >>> nltk.download()
+  
+   Open python REPL, type in:
+   >>> import nltk
+   >>> nltk.download()
+   
+   This will open a new window. Find the missing resource (see error your error msg), download it. Done!
+   
+   
+   PyCharm specific Trouble-Shooting
+   If you are running the code from PyCharm, make sure the working directory for each file is set to the root directory:
+   Run file that throws error, then go to Run -> Edit Configurations and fill in / change working directory to root
+   (yes... there might be a better way to do this...)
+
+  
+  

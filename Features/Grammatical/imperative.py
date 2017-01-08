@@ -1,21 +1,20 @@
-
-from nltk import word_tokenize
 from nltk import RegexpParser
 from nltk.tree import Tree
-from Utils.text_mods import replace_dont
-from Utils.stanford import POS_TAGGER
-import sys
+from Utils.stanford import get_tagged_sent
+#import sys
 #print(sys.version_info[0])
 
 # should expect a minimum of two words (incl. punctuation)
-def is_imperative(string_sent):
+def is_imperative(string_sent): # TODO tokenize sent und pos tagging auslagern, tagged_sent als input nehmen counters.py
     #print("\n---------------------------------")
     imperative = False
     strength = 0
-    polite = string_sent.lower().find("please") >= 0  # refers to the empathic do or use of please
+    sent_dict = dict(string_sent)
+    #polite refers to the empathic do or use of please
+    politecheck = [word for word in string_sent if word[0].lower() == "please"]
+    polite = len(politecheck) > 0
     indirect = False  # refers to presence of question tag
-    tokenized_sent = (word_tokenize(replace_dont(string_sent)))
-    tagged_sent = POS_TAGGER.tag(tokenized_sent)
+    tagged_sent = string_sent #get_tagged_sent(string_sent)
     #print(tagged_sent)
 
 
@@ -89,6 +88,5 @@ def chunk_imperative(tagged_sent):
     #print(chunked)
     return(chunked)
     
-    
-print("hello imperative")
-print(is_imperative("This is so cool!"))
+
+#print(is_imperative("This is so cool!"))

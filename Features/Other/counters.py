@@ -1,16 +1,11 @@
-from Utils.text_mods import replace_dont
-from Utils.stanford import POS_TAGGER
 from string import punctuation
 from collections import Counter
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
+from Utils.stanford import get_tagged_sent
 from Utils.text_mods import strip_punctuation, get_sents
-#from Data.corpus import corpus
-#import Data.corpus as corpus
-
-from numpy import median
-from numpy import average
+from numpy import median, average
 from Features.Lexical.diversity import get_ttr
+from Features.Grammatical.imperative import is_imperative
+from Features.Lexical.subjectivity import get_subjectivity
 import nltk.data
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -117,6 +112,14 @@ def get_sent_counts(comment):
             words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
             l = len(words)
             sent_lengths.append(l)
+
+            #We still want punctuation for POS Tagging:
+            tagged_sent = get_tagged_sent(sent)
+            imp = is_imperative(tagged_sent)
+            subj = get_subjectivity(tagged_sent)
+
+        # TODO: IMPERATIVE
+        # TODO: Subjectivity
 
     longest = max(sent_lengths)
     shortest = min(sent_lengths)
