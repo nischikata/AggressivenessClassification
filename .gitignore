@@ -8,7 +8,6 @@ Data/not_aggressive
 .DS_Store
 Data/.DS_Store
 *.pyc
-subjectivity_clues_hltemnlp05/
 venv/
 stanford-postagger-full-2015-12-09/
 subjectivity_dict.pickle
