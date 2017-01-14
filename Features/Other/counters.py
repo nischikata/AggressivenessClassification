@@ -2,11 +2,13 @@ from string import punctuation
 from collections import Counter
 from Utils.stanford import get_tagged_sent
 from Utils.text_mods import strip_punctuation, get_sents
+from Utils.tiny_helpers import flatten
 from numpy import median, average
 from Features.Lexical.diversity import get_ttr
 from Features.Grammatical.imperative import is_imperative
 from Features.Lexical.subjectivity import get_subjectivity
 import nltk.data
+from __future__ import division
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -31,10 +33,9 @@ def punctuation_count(text):
 WORD_LENGHT_THRESHOLD = 7
 
 # expects a raw text string
-def get_wordcounts(text):
+def get_wordcounts(text): #TODO rewrite input, get it form Comment object
     # approach one: strip punctuation
-    modified = text.replace("'", " ")
-    words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
+    words = strip_punctuation(text, True, '!"()-./:;,?[\\]`').split()
 
     if len(words) == 0: #returns None if no words left after stripping punctuation.
         return
@@ -87,44 +88,42 @@ def get_wordcounts(text):
             "all_caps_count": all_caps, "ttr": get_ttr(words)}
 
 
-# TODO: check whether there's a simpler, more elegant method
-def sent_count(comment):
-    """ Input is tokenized comment from my_corpus.sents(my_corpus.fileids()[9]) object is instance of StreamBackedCorpusView
-    :param comment: [[u'Mr.', u'Obama', u',', u'please', u'do', u"n't", u'give', u'10,000', u'Middle', u'East', u'terrorists', u'the', u'chance', u'to', u'enter', u'USA', u'and', u'kill', u'us', u'.'], [u'Instead', u',', u'conduct', u'a', u'mini', u'lottery', u'and', u'give', u'10,000', u'green', u'cards', u'to', u'undocumented', u'immigrants', u'who', u'are', u'already', u'here']]
-    :return: 2
-    """
-    return comment.__len__()
-
-
 
  # Returns sentence stats:
  # number of sentences;
  # shortest and longest sent, average and median sent length
  # - length measured in tokens without punctuation.
-def get_sent_counts(comment):
+def get_sent_counts(comment): #TODO rewrite input, get it form Comment object
 
     sents = get_sents(comment)
-    sent_lengths = []
+    sents = flatten(sents)
+    sent_lengths_w = [] # length in words
+    sent_lengths_ch = [] # lenght in characters
+
 
 
     for sent in sents:
-            modified = sent.replace("'", " ")
-            words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
+            words = strip_punctuation(sent, True, '!"()-./:;,?[\\]`').split()
             l = len(words)
-            sent_lengths.append(l)
+            sent_lengths_w.append(l)
+            ch = len(sent)
+            w_ch_ratio = l/ch
+            sent_lengths_ch.append(ch)
 
             #We still want punctuation for POS Tagging:
+            # TODO: PREPROCESSING: Spellcheck + correction
             tagged_sent = get_tagged_sent(sent)
             imp = is_imperative(tagged_sent)
             subj = get_subjectivity(tagged_sent)
 
-        # TODO: IMPERATIVE
-        # TODO: Subjectivity
+        # TODO: PREPROCESSING: Spellcheck + correction
 
-    longest = max(sent_lengths)
-    shortest = min(sent_lengths)
-    med = median(sent_lengths)
-    avg = average(sent_lengths)
+    longest = max(sent_lengths_w)
+    shortest = min(sent_lengths_w)
+    med = median(sent_lengths_w)
+    avg = average(sent_lengths_w)
+
+    #TODO words to characters ratio
 
     return {"sent_count": len(sents), "shortest": shortest, "longest": longest, "avg": avg, "median": med}
 

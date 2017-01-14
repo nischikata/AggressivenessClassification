@@ -23,4 +23,4 @@ def get_tagged_sent(string_sent):
     tokenized_sent = (word_tokenize(replace_dont(string_sent)))
     return POS_TAGGER.tag(tokenized_sent)
 
-#print get_tagged_sent("Hello world.")
+print get_tagged_sent("The patient lost a lot of blood")

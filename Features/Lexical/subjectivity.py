@@ -1,20 +1,16 @@
 import pickle
 import os.path
 from nltk.stem import PorterStemmer
+import random
 
 
 FILEPATH = "subjectivity_dict.pickle"
-# strengths of subjectivity
+# strengths of subjectivity:
 STRONGSUBJ = 1.0
 WEAKSUBJ = 0.5
-NOSUBJ = 0.0
-#polarity of word
-#positive, negative, both, neutral
-POSITIVE = 0
-NEGATIVE = 0
-BOTH = 0
-NEUTRAL = 0
-polarities = ["positive", "negative", "neutral", "both"]
+
+STRENGTHS = { "weaksubj": WEAKSUBJ, "strongsubj": STRONGSUBJ}
+POLARITIES = ["positive", "negative", "neutral", "both"]
 
 
 def convert_POS(pos_word):
@@ -25,97 +21,107 @@ subjectivity_dict = {}
 
 port = PorterStemmer()
 
+
 if not os.path.exists(FILEPATH):
 
     with open('subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff') as fp:
         for line in fp:
             entry = line.split(" ")
 
-
             stemmed = True if entry[4][9] is 'y' else False
             # TODO: add stemmed version of unstemmed words to dictionary,
-            # TODO: additionaly if time check if it already exists and if so check polarity, there might be some conflict!
+            # TODO: additionaly if time check if it already exists and if so check polarity, there might be a conflict!
 
-            #  if the word is marked as stemmed, stem it with THE STEMMER THAT I USE, so the stems will actually match. else use the word as is:
+            #  if the word is marked as stemmed, stem it with THE STEMMER THAT I USE, so the stems will actually
+            #  match. else use the word as is:
             word = port.stem(entry[2][6:]) if stemmed else entry[2][6:]
             strength = STRONGSUBJ if entry[0][5] is 's' else WEAKSUBJ
 
             # POS TAG:
             pos = convert_POS(entry[3][5:])
 
-
-
             polarity = entry[5][14:].strip("\n")
 
-
-
-
             if word in subjectivity_dict:
-                """
-                pol = subjectivity_dict[word]["polarity"]
-
-                if pol != polarity:
-                    pass
-
-                   # print "POLARITY CONFLICT: ", word, "  ", pol, "  ", polarity
-
-                if subjectivity_dict[word]["strength"] != strength:
-                    pass
-                    #print "TYPE CONFLICT: ", word, "  ", strength, "  ", subjectivity_dict[word]["strength"]
-                """
                 subjectivity_dict[word][pos] = {"strength": strength, "stemmed": stemmed, "polarity": polarity}
 
             else:
                 subjectivity_dict[word] = {pos: {"strength": strength, "stemmed": stemmed, "polarity": polarity}}
 
-
-            #subjectivity_dict[word] = {"strength": strength, "pos": pos, "stemmed": stemmed, "polarity": polarity}
-
-
-
-    #pickle_out = open("subjectivity_dict.pickle", "wb")
-    #pickle.dump(subjectivity_dict, pickle_out)
-    #pickle_out.close()
+    # SAVE TO FILE FOR FASTER ACCESS next time
+    pickle_out = open("subjectivity_dict.pickle", "wb")
+    pickle.dump(subjectivity_dict, pickle_out)
+    pickle_out.close()
 
 else:
+    # OPEN FILE and reconstruct SUBJECTIVITY DICTIONARY
     pickle_in = open(FILEPATH, "rb")
     subjectivity_dict = pickle.load(pickle_in)
 
 
+# tagged_sent: a sentence in the form of POS-Tag tuple tokens
+# TODO: ideally the tokens have been spell-checked and corrected ALREADY
+def get_subjectivity(tagged_sent):
+    polarity = { "positive": 0.0, "negative": 0.0, "both": 0.0, "neutral": 0.0, "none": 0.0, "subj": 0.0}
 
-## TODO: call this function from counters.py get word_counts() (OR if needed per sentence get sents_count() in the loop)
-# tokens: list of tokens without punctuation
-# ideally the tokens have been spell-checked and corrected ALREADY
-def get_subjectivity(tokens):
-    polarity = { "positive": 0.0, "negative": 0.0, "both": 0.0, "neutral": 0.0}
-    none = 0.0
-    subj = 0.0
+    for t in tagged_sent:
+        # spellcheck token
 
 
-    for token in tokens:
-        print token
-        token = token if token in subjectivity_dict else port.stem(token)
-        print token
+        # check if the token is in the subj dict, else try the stemmed version of the token
+        token = t[0] if t[0] in subjectivity_dict else port.stem(t[0])
 
         if token in subjectivity_dict:
-            #token is in subjectivity dict
-            subj += 1
-            # TODO check the pos tag of the token and see if it matches a pos tag from the entry, then take polarity and strength from there
+            polarity["subj"] += 1
+            item = subjectivity_dict[token]
+            #item looks like {pos: {"strength": strength, "stemmed": stemmed, "polarity": polarity}}
 
+            tag = t[1][:2] # only take the first 2 chars - we don't care about subcategories of pos tags
+
+            # check if the tag of this token is available for the lexicon item that was found
+            # e.g. token = ("blood", "NN") ... see if there is an NN-tag entry for the "blood" item
+            # yes there is:
+            # blood {'JJ': {'stemmed': False, 'polarity': 'neutral', 'strength': 0.5},
+            #        'NN': {'stemmed': False, 'polarity': 'negative', 'strength': 0.5}}
+            tag = tag if tag in item else "anypos"
+            if tag in item:
+                # print "matching POS tag found for ", token, " tag: ", tag
+                data = item[tag]
+                # data looks like {"strength": strength, "stemmed": stemmed, "polarity": polarity}
+                polarity[data["polarity"]] += data["strength"]
+
+            else:
+                # TODO: decide: take a random entry from the item dict or nothing?
+                # print "choosing random tag..."
+                random_tag = random.choice(item.keys())
+                data = item[random_tag]
+                polarity[data["polarity"]] += data["strength"]
 
         else:
             # token is not in subjectivity dictionary
-            none += 1
-
+            polarity["none"] += 1
 
     return polarity
 
+def get_word_subjectivity(word, pos_tag):
+    # TODO: if word is not in subjectivity dict, also try spellchecker
+    #if the word does not exists in the spellchecker
 
-# ------ testing stuff and reminders ----- remove when done
+    word = word if word in subjectivity_dict else port.stem(word)
+
+    pass
+
+
+
+# ------ TESTS, REMINDERS AND PROBLEMS/CHALLENGES----- remove when done
 
 print "zest", subjectivity_dict["zest"]
-print "stupid", subjectivity_dict["stupid"]
+print "blood", subjectivity_dict["blood"]
 print "precious", subjectivity_dict["precious"]
+
+text = [(u'The', u'DT'), (u'patient', u'NN'), (u'lost', u'VBD'), (u'a', u'DT'), (u'lot', u'NN'), (u'of', u'IN'), (u'blood', u'NN')]
+
+print get_subjectivity(text)
 
 
 # testing the corpus
@@ -165,7 +171,7 @@ POLARITY CONFLICT:  presum    neutral    negative
 ---> This means: POS TAGS must be considered as well, including their corresponding strength and polarity
 
 
-NEXT PROBLEM:
+(SORT OF) SOLVED by assigning RANDOM Tag if no matching Tag was found:
 type=weaksubj len=1 word1=tangled pos1=adj stemmed1=n priorpolarity=negative
 Tangled here is an adjective, but it can also be VBZ or VBN, depending on the situation.
 
