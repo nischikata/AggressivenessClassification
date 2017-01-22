@@ -1,9 +1,13 @@
 from string import punctuation
 import nltk.data
 import re
-import enchant
+from dictionaries import en_Dict, basic_leet_nums
 
-en_Dict = enchant.Dict("en_US")
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+
+#en_Dict = enchant.Dict("en_US")
+
+#basic_leet_nums = {'0': 'o', '1': 'i', '2': 'r', '3': 'e', '4': 'a', '5': 's', '6': 'b', '7': 't', '8': 'B', '9': 'g'}
 
 # Text modification module
 
@@ -38,15 +42,28 @@ def strip_punctuation(string_text, seperate_contractions=False, punc = punctuati
             string_text = string_text.replace("`", " ")
     return ''.join(c for c in string_text if c not in punc)
 
+def strip_surrounding_punctuation(string_text, leading = '!(\'"`{<>', trailing = '\'"`)]<>?.,;!'):
+    stripped = string_text.lstrip(leading).rstrip(trailing)
+    return stripped
 
-tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-# returns a list of raw sentences, given a raw comment
-# sentences here are defined as ending in .?!\n (paragraph - since some users completely omit punctuation)
+#
 def get_sents(raw_comment):
+    """
+    Divides a raw string comment into sentences per paragraph
+    sentences here are defined as ending in .?!\n (paragraph - since some users completely omit punctuation)
+
+    :param raw_comment: string
+    :return: a 2 dimensional list, consisting of a list of paraphs, which consist of a list of sentences
+
+    >>> get_sents("Time is an illusion. Lunchtime doubly so.\\n- Douglas Adams" )
+    [['Time is an illusion.', 'Lunchtime doubly so.'], ['- Douglas Adams']]
+    """
+    # TODO: use ellipsis as end of sentene too? But if I do this, I MUST call normalize_ellipsis(raw_comment) RIGHT HERE
+    # This poses the next question though: What happens to a sentence like this 'Hello... !" TODO: investigate!!
+    raw_comment = normalize_ellipsis(raw_comment)
     sents = []
-    # in my case, when it had '\n', I called it a new paragraph,
-    # like a collection of sentences
+
     paragraphs = [p for p in raw_comment.split('\n') if p]
     # and here, sent_tokenize each one of the paragraphs
     for paragraph in paragraphs:
@@ -60,22 +77,23 @@ def get_sents(raw_comment):
 
         sents.append(p_sents)
 
-    # returns a 2dim list, consisting of a list of paraphs, which consist of a list of sentences
+    #
     return sents
 
 def normalize_ellipsis(raw_sent):
     """
-    >>> sent = "Hello.."
-    >>> normalize_ellipsis(sent)
-    'Hello...'
+    Replaces any form of ellipsis (.., ..., ......) with a normalized version with a trailing blank (!)
+    >>> normalize_ellipsis('...')
+    '... '
     >>>
-    >>> sent = "Hey. What's up..........?"
-    >>> normalize_ellipsis(sent)
-    "Hey. What's up...?"
-    >>> normalize_ellipsis("Hey...... sup..?")
-    'Hey... sup...?'
+    >>> normalize_ellipsis("Hello..")
+    'Hello... '
+    >>> normalize_ellipsis("Hey. What's up..........?")
+    "Hey. What's up... ?"
+    >>> normalize_ellipsis("Hey......sup..?")
+    'Hey... sup... ?'
     """
-    return re.sub('[.][.]+', '...', raw_sent)
+    return re.sub('[.][.]+', '... ', raw_sent)
 
 
 def handle_dollar(token):
@@ -94,14 +112,18 @@ def handle_dollar(token):
     >>> handle_dollar("dumba$$")
     'dumbass'
     """
+
+    if len(token) < 2:
+        return token
     if token[0] == "$" and re.search('[a-zA-Z]', token) is None:
         return ("$ " + token[1:])
     else:
         return token.replace("$", 's')
 
+
 def handle_at(token):
     """
-    replaces an '@' with an 'a' if it is not used in an email address
+    replaces an '@' with an 'a' if it is not used in an email address. can deal with (trailing punctuation
     :param token:
     :return:
 
@@ -110,8 +132,14 @@ def handle_at(token):
     >>>
     >>> handle_at("b@st@rdo")
     'bastardo'
+    >>> handle_at("trillian@universe.com...?")
+    'trillian@universe.com...?'
+    >>> handle_at("(marvin@dont-ask.com)")
+    '(marvin@dont-ask.com)'
     """
-    if re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", token) is None:
+
+    token_stripped = token.lstrip(':=\'"`()<>[]').rstrip(':=\'"()<>[].!?,;`') #remove leading and trailing punctuation
+    if re.search(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", token_stripped) is None:
         return token.replace("@", "a")
     else:
         return token
@@ -120,8 +148,8 @@ def handle_at(token):
 def handle_exclamationMark(token):
     """
     replaces the '!' char with an 'i' if its within a word
-    :param token:
-    :return:
+    :param token: string
+    :return: string
 
     >>> t = "Stop!!?!"
     >>> handle_exclamationMark(t)
@@ -157,77 +185,78 @@ def handle_exclamationMark(token):
         return token
 
 
+def handle_numeric_1337_speak(token):
+    """
+
+    turns 'sh1t' into 'shit'
+    note: token should be preprocessed with handle_dollar
+
+    :param token: string
+    :return: string
+
+    >>> handle_numeric_1337_speak("h473")
+    'hate'
+    >>> handle_numeric_1337_speak('5h1T!')
+    'shiT!'
+    >>> handle_numeric_1337_speak("666")
+    '666'
+    >>> handle_numeric_1337_speak("400!")
+    '400!'
+    >>> handle_numeric_1337_speak("$ 400")
+    '$ 400'
+
+    """
+    stripped = strip_punctuation(token).replace(" ", "")
+    if stripped.isdigit() or stripped.isalpha() or stripped == "":
+        return token
+
+    word = ""
+    for i, c in enumerate(token):
+        if c.isdigit():
+            word += basic_leet_nums[c]
+        else:
+            word += c
+
+    return word
+
+
 def handle_lengthening(token):
     """
     To normalize lenghtend words like: 'niiiice' -> 'nice', 'coooooool' -> 'cool', 'realllllly' -> 'really'
-    :param token:
-    :return:
+    Note: only works for 3 repetitions or more (efficiency!) -> 'niice' stays the same 'niice'
+    also punctuation and numbers will not be shortened
+    :param token: string
+    :return: string
     >>> handle_lengthening("cooooool")
     'cool'
-    >>> handle_lengthening("really")
+    >>> handle_lengthening("niiiiiiiiiiiiiiice")
+    'nice'
+    >>> handle_lengthening("reallly")
     'really'
     >>> handle_lengthening("hellllloooooooo")
-    'helloo'
+    'hello'
+    >>> handle_lengthening("helloo!!!")
+    'helloo!!!'
+    >>> handle_lengthening("30000")
+    '30000'
     """
 
     # http://stackoverflow.com/a/1660758/4866678
-
-    f = re.search(r'(.)\1{3,}', token)
+    pattern = re.compile(r'([a-zA-Z])\1{2,}')
+    f = pattern.search(token)
+    len1 = ""
     while f:
+        len1 = token[:f.start()] + f.group()[:1] + token[f.end():]
         token = token[:f.start()] + f.group()[:2] + token[f.end():]
-        f = re.search(r'(.)\1{3,}', token)
+        f = pattern.search(token)
+
+    if len1 != "" and not en_Dict.check(strip_punctuation(token)):
+        # if the token is not in the dictionary (e.g. niice), check if the len1 version is (e.g. nice)
+        if en_Dict.check(strip_punctuation(len1)):
+            token = len1
 
     return token
 
-
-
-def handle_noise(raw_sentence):
-    """
-    :param raw_sentence:
-    :return:
-    >>> sent = "Hey a$$hole, give me $300!"
-    >>> handle_noise(sent)
-    'Hey asshole, give me $ 300!'
-    >>> sent = "Th@ts $tup!d!"
-    >>> handle_noise(sent)
-    'Thats stupid!'
-    """
-    #TODO:
-    # find sequences of . and if they are not of length 1 or 3, then change them to length 3
-    # 1. split into tokens by " "
-    tokens = raw_sentence.split(" ")
-    new_sent = ""
-    # 2. find tokens that contain non alphanumeric chars but keep punctuation ( . , ? ! % () "" ' ) and similar intact
-    # look for chars like @#%*$ or numbers within a word
-
-
-    for token in tokens:
-        new_sent += fix_word(token) + " "
-
-
-    # 3. TODO: is there a sequence of single char tokens, possibly even all caps? uuh! that's a sign
-
-    return new_sent[:-1]
-
-
-def get_spellchecked(word):
-    """
-    :param word: single string word
-    :return: same word (if it exists in en_US dictionary) or the highest ranked spelling suggestion
-    >>> get_spellchecked("happy")
-    'happy'
-    >>> get_spellchecked("unhapy")
-    'unhappy'
-
-    """
-    if en_Dict.check(word):
-        return word
-    else:
-        suggestions = en_Dict.suggest(word)
-        if len(suggestions) > 0:
-            return suggestions[0]
-        else:
-            return word
 
 
 
@@ -251,9 +280,69 @@ def fix_dollar(fn):
         return fn(word)
     return wrapped
 
+def fix_lenghtening(fn):
+    def wrapped(word):
+        word = handle_lengthening(word)
+        return fn(word)
+    return wrapped
+
+def fix_leet(fn):
+    def wrapped(word):
+        word = handle_numeric_1337_speak(word)
+        return fn(word)
+    return wrapped
+
 
 @fix_at
 @fix_exclamation
 @fix_dollar
+@fix_leet
+@fix_lenghtening
 def fix_word(w):
+    """
+    applies preprocessing steps on input token and returns a 'fixed' version of the word
+    :param w: string token
+    :return: string token
+
+    >>> fix_word("alright")
+    'alright'
+    >>>
+    >>> fix_word("suuuuuucks")
+    'sucks'
+
+    """
     return w
+
+
+def normalize_comment(raw_sentence):
+    """
+    :param raw_sentence: string
+    :return: string
+    >>> sent = "Hey a$$hole, give me $300!"
+    >>> normalize_comment(sent)
+    'Hey asshole, give me $ 300!'
+    >>> sent = "Th@ts $tup!d! 5hu7 y0u2 724p."
+    >>> normalize_comment(sent)
+    'Thats stupid! shut your trap.'
+    >>> normalize_comment("If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?.... ")
+    ''
+    """
+    processed = normalize_ellipsis(raw_sentence)
+    #TODO:
+    # find sequences of . and if they are not of length 1 or 3, then change them to length 3
+    # 1. split into tokens by " "
+    tokens = processed.split(" ")
+    processed_sent = ""
+    # 2. find tokens that contain non alphanumeric chars but keep punctuation ( . , ? ! % () "" ' ) and similar intact
+    # look for chars like @#%*$ or numbers within a word
+
+
+    for token in tokens:
+        processed_sent += fix_word(token) + " "
+
+
+    # 3. TODO: is there a sequence of single char tokens, possibly even all caps? uuh! that's a sign
+
+    return processed_sent[:-1]
+
+

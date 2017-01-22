@@ -11,3 +11,5 @@ Data/.DS_Store
 venv/
 stanford-postagger-full-2015-12-09/
 subjectivity_dict.pickle
+/politeness_dict.pickle
+/blacklist_dict.pickle

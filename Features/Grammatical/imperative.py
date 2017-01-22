@@ -1,11 +1,9 @@
 from nltk import RegexpParser
 from nltk.tree import Tree
-#import sys
-#print(sys.version_info[0])
 
 # should expect a minimum of two words (incl. punctuation)
 def is_imperative(tagged_sent):
-    #print("\n---------------------------------")
+
     imperative = False
     strength = 0
     sent_dict = dict(tagged_sent)

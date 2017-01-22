@@ -1,4 +1,4 @@
-from Utils.text_mods import get_sents, strip_punctuation, handle_noise
+from Utils.text_mods import get_sents, strip_surrounding_punctuation, normalize_comment
 from Utils.stanford import get_tagged_sent
 from Utils.tiny_helpers import flatten
 """
@@ -47,17 +47,18 @@ class Comment:
 
     def get_sents_variations(self):
         stripped = []
-        noise_handled = []
         pos_tagged = []
         for sent in self.raw_sents:
-            stripped.append(strip_punctuation(sent, True))
+            stripped.append(strip_surrounding_punctuation(sent))
 
-            no_noise = handle_noise(sent)
-            noise_handled.append(no_noise)
+        preprocessed_comment = normalize_comment(self.raw)
+        preprocessed_sents = get_sents(preprocessed_comment)
+        preprocessed_sents = flatten(preprocessed_sents)
 
-            pos_tagged.append(get_tagged_sent(no_noise))
+        for sent in preprocessed_sents:
+            pos_tagged.append(get_tagged_sent(sent))
 
-        return {"punc_stripped": stripped, "noise_handled": noise_handled, "pos_tagged": pos_tagged}
+        return {"raw_punc_stripped": stripped, "normalized": preprocessed_sents, "pos_tagged": pos_tagged}
 
 
 
@@ -83,6 +84,9 @@ class Comment:
 
 
 
-co = Comment("Shut up! I'm so sick of it all.\nGimme a break. NIce!", "123")
+co = Comment("They're right.\n$h1t happens all the 71m3. N!99a!", "123")
 print co.raw_sentences()
 print co.count_paras()
+print co.count_sents()
+
+print co.get_sents_variations()

@@ -47,9 +47,12 @@ SETTING UP THE PROJECT
    
    
    PyCharm specific Trouble-Shooting
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    If you are running the code from PyCharm, make sure the working directory for each file is set to the root directory:
    Run file that throws error, then go to Run -> Edit Configurations and fill in / change working directory to root
    (yes... there might be a better way to do this...)
 
+    To use venv in PyCharm choose the 2.7.5 virtualenv Project Interpreter that is located in the project root dir:
+    PyCharm -> Preferences -> Project: AggressivenessClassification -> Project Interpreter
   
   

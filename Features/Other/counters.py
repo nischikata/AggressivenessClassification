@@ -1,3 +1,4 @@
+from __future__ import division
 from string import punctuation
 from collections import Counter
 from Utils.stanford import get_tagged_sent
@@ -8,7 +9,7 @@ from Features.Lexical.diversity import get_ttr
 from Features.Grammatical.imperative import is_imperative
 from Features.Lexical.subjectivity import get_subjectivity
 import nltk.data
-from __future__ import division
+
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -28,12 +29,13 @@ def punctuation_count(text):
     return {k: v for k, v in counts.iteritems() if k in punctuation}
 
 
+print punctuation_count("blab.")
 
 # to count words longer than this number
 WORD_LENGHT_THRESHOLD = 7
 
 # expects a raw text string
-def get_wordcounts(text): #TODO rewrite input, get it form Comment object
+def get_wordcounts(text): #TODO rewrite input, get it form Comment object ... REALLY? here? does the source matter?
     # approach one: strip punctuation
     words = strip_punctuation(text, True, '!"()-./:;,?[\\]`').split()
 

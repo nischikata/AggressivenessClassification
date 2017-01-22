@@ -24,7 +24,7 @@ port = PorterStemmer()
 
 if not os.path.exists(FILEPATH):
 
-    with open('subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff') as fp:
+    with open('word_lists/subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff') as fp:
         for line in fp:
             entry = line.split(" ")
 
@@ -49,7 +49,7 @@ if not os.path.exists(FILEPATH):
                 subjectivity_dict[word] = {pos: {"strength": strength, "stemmed": stemmed, "polarity": polarity}}
 
     # SAVE TO FILE FOR FASTER ACCESS next time
-    pickle_out = open("subjectivity_dict.pickle", "wb")
+    pickle_out = open(FILEPATH, "wb")
     pickle.dump(subjectivity_dict, pickle_out)
     pickle_out.close()
 
@@ -62,7 +62,7 @@ else:
 # tagged_sent: a sentence in the form of POS-Tag tuple tokens
 # TODO: ideally the tokens have been spell-checked and corrected ALREADY
 def get_subjectivity(tagged_sent):
-    polarity = { "positive": 0.0, "negative": 0.0, "both": 0.0, "neutral": 0.0, "none": 0.0, "subj": 0.0}
+    polarity = {"positive": 0.0, "negative": 0.0, "both": 0.0, "neutral": 0.0, "none": 0.0, "subj": 0.0}
 
     for t in tagged_sent:
         # spellcheck token
@@ -103,10 +103,8 @@ def get_subjectivity(tagged_sent):
 
     return polarity
 
+# TODO: FINISH THIS! funktionalitaet von obiger methode in diese auslagern
 def get_word_subjectivity(word, pos_tag):
-    # TODO: if word is not in subjectivity dict, also try spellchecker
-    #if the word does not exists in the spellchecker
-
     word = word if word in subjectivity_dict else port.stem(word)
 
     pass
@@ -115,20 +113,13 @@ def get_word_subjectivity(word, pos_tag):
 
 # ------ TESTS, REMINDERS AND PROBLEMS/CHALLENGES----- remove when done
 
-print "zest", subjectivity_dict["zest"]
-print "blood", subjectivity_dict["blood"]
-print "precious", subjectivity_dict["precious"]
+#print "zest", subjectivity_dict["zest"]
+#print "blood", subjectivity_dict["blood"]
+#print "precious", subjectivity_dict["precious"]
 
-text = [(u'The', u'DT'), (u'patient', u'NN'), (u'lost', u'VBD'), (u'a', u'DT'), (u'lot', u'NN'), (u'of', u'IN'), (u'blood', u'NN')]
+#text = [(u'The', u'DT'), (u'patient', u'NN'), (u'lost', u'VBD'), (u'a', u'DT'), (u'lot', u'NN'), (u'of', u'IN'), (u'blood', u'NN')]
 
-print get_subjectivity(text)
-
-
-# testing the corpus
-text = "Swore sworn".split(" ")
-#get_subjectivity(text)
-
-
+#print get_subjectivity(text)
 
 
 # TODO: check this out: http://stackoverflow.com/a/2116011/4866678

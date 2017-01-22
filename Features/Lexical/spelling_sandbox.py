@@ -8,6 +8,9 @@ from enchant.tokenize import get_tokenizer, EmailFilter, URLFilter
 # Apply spellchecker after auto correction of noise-words
 # Apply it to whole comment which includes punctuation.
 
+# TODO include urban dictionary. urban dictionary might make NER obsolete (at least for 1 token entities),
+# since it popular names (Obama, Hillary and derivatives like Obummer, Hitlery)
+
 #TODO first find all NAMED ENTITIES, possibly remove them from string, so the you only get the errors
 # this way i'll get at least the number of spelling mistakes; fixing is a different chapter. not sure if i'll do it since
 # doesn't work too well for simple errors :(
