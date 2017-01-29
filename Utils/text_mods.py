@@ -2,6 +2,7 @@ from string import punctuation
 import nltk.data
 import re
 from dictionaries import en_Dict, basic_leet_nums
+import editdistance
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -239,9 +240,12 @@ def handle_lengthening(token):
     'helloo!!!'
     >>> handle_lengthening("30000")
     '30000'
+    >>> handle_lengthening("heeellllllooooo")   # 'fail' / room for improvement
+    'heelloo'
     """
 
     # http://stackoverflow.com/a/1660758/4866678
+
     pattern = re.compile(r'([a-zA-Z])\1{2,}')
     f = pattern.search(token)
     len1 = ""
@@ -258,6 +262,57 @@ def handle_lengthening(token):
     return token
 
 
+def handle_other_noise(token):
+    """
+    transforms other 'misused' characters in words into most likely alphabetical char
+    :param token:
+    :return:
+    >>> handle_other_noise("S#%t")
+    'Shit'
+    >>> handle_other_noise("#42")
+    '#42'
+    >>> handle_other_noise("10%!")
+    '10%!'
+    """
+    if any(str.isalpha(c) for c in token):  # and not any(str.isdigit(c) for c in token):
+        token = token.replace("#", 'h')
+        token = token.replace("%", 'i')
+        # token = token.replace("+", 't') # this is problematic where '+' is a replacement for 'and'
+    return token
+
+
+# input raw comment exactly as it is
+def handle_spacing(raw_comment):
+    """
+    collapses spaced words. e.g. 's h i t' -> 'shit'; 's.t.u.p.i.d' -> 'stupid'
+    connects a sequence of single alpha characters (num alpha chars >= 3) to form a word
+
+    :param raw_comment:
+    :return:
+    >>> handle_spacing("S t u p i d !")
+    {'spaced_words_count': 1, 'modified_string': 'Stupid !'}
+    >>> handle_spacing("T h i s is   s t u p i d!")
+    {'spaced_words_count': 2, 'modified_string': 'This is   stupid!'}
+    >>> handle_spacing("B.a.s.t.a.r.d!")
+    {'spaced_words_count': 1, 'modified_string': 'Bastard!'}
+    """
+    count = 0
+    modified = ""
+    search_string = raw_comment
+    pattern = re.compile('(^|\s)(([a-zA-Z])( |$|[.!?])){3,}')
+    f = pattern.search(search_string)
+    while f:
+        word = f.group()[0] + strip_punctuation(f.group()[1:-1], False, " .!") + f.group()[-1]
+        if len(word) < f.group():
+            count += 1
+
+        modified += search_string[0:f.start()] + word
+        search_string = search_string[f.end():] # search the rest of the string and add it to the modified head of string afterwards
+        f = pattern.search(search_string)
+
+    modified += search_string
+
+    return {"modified_string": modified, "spaced_words_count": count}
 
 
 # PLAYING WITH DECORATORS  --- How cooooool is that???? :-))))))
@@ -292,12 +347,20 @@ def fix_leet(fn):
         return fn(word)
     return wrapped
 
+def fix_other_noise(fn):
+    def wrapped(word):
+        word = handle_other_noise(word)
+        return fn(word)
+    return wrapped
+
+
 
 @fix_at
 @fix_exclamation
 @fix_dollar
 @fix_leet
 @fix_lenghtening
+@fix_other_noise
 def fix_word(w):
     """
     applies preprocessing steps on input token and returns a 'fixed' version of the word
@@ -313,6 +376,10 @@ def fix_word(w):
     """
     return w
 
+
+# TODO testen ob es auch mit absaetzen funktioniert
+# TODO idealerweise kann ich da den ganzen comment reinschieben
+# und bekomme den normalisierten komment heraus, inklusive einen sub-feature vector
 
 def normalize_comment(raw_sentence):
     """
@@ -335,13 +402,14 @@ def normalize_comment(raw_sentence):
     processed_sent = ""
     # 2. find tokens that contain non alphanumeric chars but keep punctuation ( . , ? ! % () "" ' ) and similar intact
     # look for chars like @#%*$ or numbers within a word
-
+    lengthening = 0
 
     for token in tokens:
-        processed_sent += fix_word(token) + " "
-
-
-    # 3. TODO: is there a sequence of single char tokens, possibly even all caps? uuh! that's a sign
+        modified_token = fix_word(token)
+        ed = editdistance.eval(token, modified_token)
+        if len(modified_token) < len(token):
+            lengthening += 1
+        processed_sent += modified_token + " "
 
     return processed_sent[:-1]
 

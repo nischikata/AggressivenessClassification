@@ -35,7 +35,7 @@ for err in chkr:
     err.replace(ench.suggest(err.word))
 
 print "-------------------"
-text2 = "They`re my friends' addresses: blabla@gmail.com and blub@gmailc.om. His name is Obama. That's Hillary. It s a nce day, isnt it? Cant go wrong with that. Thats Donald the old duck."
+text2 = "Do you live in the US? Because if yo do than your full of sh%+ and a hypocrite"
 chkr.set_text(text2)
 for err in chkr:
     print "ERROR: ", err.word, " suggestion: ", ench.suggest(err.word)

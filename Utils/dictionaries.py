@@ -2,9 +2,8 @@ import enchant
 import urbandictionary as ud
 
 en_Dict = enchant.Dict("en_US")
-
 basic_leet_nums = {'0': 'o', '1': 'i', '2': 'r', '3': 'e', '4': 'a', '5': 's', '6': 'b', '7': 't', '8': 'B', '9': 'g'}
-
+punc_as_letters = {'$': 's', '!': 'i', '@': 'a', '#': 'h', '+': 't', ':': 'i', '%': 'i'}
 
 # ----- URBAN DICTIONARY ----
 

@@ -1,6 +1,6 @@
 README
 
-Project is written using Python version 2.7.5
+This project is written in Python version 2.7.5 by Tina Schuh
 
 SETTING UP THE PROJECT
 

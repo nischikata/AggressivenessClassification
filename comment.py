@@ -90,3 +90,7 @@ print co.count_paras()
 print co.count_sents()
 
 print co.get_sents_variations()
+
+
+def extract_features(text):
+    comment = Comment(text)

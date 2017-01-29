@@ -39,8 +39,8 @@ def get_wordcounts(text): #TODO rewrite input, get it form Comment object ... RE
     # approach one: strip punctuation
     words = strip_punctuation(text, True, '!"()-./:;,?[\\]`').split()
 
-    if len(words) == 0: #returns None if no words left after stripping punctuation.
-        return
+    if len(words) == 0: #if no words left after stripping punctuation.
+        return None
 
     nums = 0
     long_words_count = 0
