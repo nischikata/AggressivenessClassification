@@ -29,7 +29,7 @@ def get_char_count(raw_comment, whitespaces=True):
 def get_whitespace_ratio(raw_comment):
     all_chars = get_char_count(raw_comment)
     wo_whitespace = get_char_count(raw_comment, False)
-    return wo_whitespace/all_chars
+    return (all_chars - wo_whitespace)/all_chars
 
 
 def punctuation_count(text):
@@ -124,25 +124,26 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
                 if not token.isalpha():
                     noise_count += 1
 
-                if token.isupper():
+                elif token.isupper():
                     all_caps["count_all"] += 1
 
                 elif not token[1:].islower() and not token[1:].isupper() or token.swapcase().istitle():
                     mixed_case_word_count += 1
+
 
             if wl > WORD_LENGHT_THRESHOLD:
                 long_words_count += 1
 
     list_word_lengths = sorted(list_word_lengths)
 
-    max_wordlength = max(list_word_lengths)
+    max_wordlength = 0 if len(list_word_lengths) == 0 else max(list_word_lengths)
     wl_median = median(list_word_lengths)
     wl_average = average(list_word_lengths)
 
-    all_caps["count_all"] += all_caps["one_char_count"]     # count of all tokens in all caps style
+    all_caps = all_caps["count_all"] + all_caps["one_char_count"]     # count of all tokens in all caps style
 
     return {"one_char_token_count": count_one_char, "max_wordlength": max_wordlength, "num_count": nums,
-            "word_count": len(list_word_lengths), "median_wordlength": wl_median, "average_wordlength": wl_average,
+            "word_count": len(list_word_lengths) + nums, "median_wordlength": wl_median, "average_wordlength": wl_average,
             "long_words_count": long_words_count, "noise_count": noise_count, "all_caps_count": all_caps,
             "mixed_case_word_count": mixed_case_word_count, "ttr": get_ttr(tokens)}
 

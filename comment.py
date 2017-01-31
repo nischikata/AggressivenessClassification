@@ -1,3 +1,4 @@
+from __future__ import division
 from Utils.text_mods import get_sents, strip_surrounding_punctuation, normalize_comment
 from Utils.stanford import get_tagged_sent
 from Utils.tiny_helpers import flatten
@@ -49,11 +50,13 @@ class Comment:
 
         self.sents_processed = self.__compute_sents_variations()
         self.features.update(get_sent_counts(self.get_sent_tokens_wo_punctuation()))
-        self.features["subjectivity"] = self.get_subjectivity_features()
+
         self.features.update(self.get_imperative_features())
         self.features["modal_count"] = self.count_modal_verbs()
         self.features["whitespace_ratio"] = get_whitespace_ratio(self.raw)
         self.features.update(get_wordcounts(flatten(self.sents_processed["tokens_stripped"])))
+
+        self.features.update(self.get_subjectivity_features())
         self.features.update(get_punctuation_stats(self.raw))
 
 
@@ -103,11 +106,14 @@ class Comment:
 
 
     # NUMERIC REPRESENTATIONS of comment (amount of paragraphs, sentences, words,....)
+    def count_tokens(self):
+        return self.features['word_count']
+
     def count_paras(self):
         return self.cnt_paras
 
     def count_sents(self):
-        return len(self.raw_sents)
+        return len(self.get_sent_tokens_wo_punctuation())
 
     def get_features_dict(self):
         return self.features
@@ -123,9 +129,9 @@ class Comment:
             #polarity = {x: polarity.get(x, 0) + subj_sent.get(x, 0) for x in set(polarity).union(subj_sent)}
             for k in polarity:
                 polarity[k] += subj_sent[k]
-            #polarity = polarity + Counter(subj_sent)  # add dictionaries together
 
-        return polarity
+        return {'subj_none': polarity['none'], 'subj': polarity['subj'], 'subj_pos': polarity['positive'], 'subj_neg': polarity['negative']}
+
 
     def get_imperative_features(self):
         sents = self.get_POStagged_sents()
@@ -168,17 +174,16 @@ class Comment:
 
 
 
-co = Comment("Would you stop that bullsh*t. .! \n$h1t can happen all the 71m3. N!99a!", "123")
-
+#co = Comment("Would you stop that bullsh*t...! \n$h1t can happen  a l l   the 71m3. N!99a!", "123")
+"""
+co = Comment("2342 23423 1231 2341!", "123")
+print co.get_raw_preprocessed_comment()
 print "\n---- FEATURES ----"
-print co.features
-print "\---------\n"
-print co.get_POStagged_sents()
+f = co.features
 
-print co.get_subjectivity_features()
-
-print co.get_sent_tokens_wo_punctuation()
+for k, v in f.items():
+    print " ", k, " --> ", v
 
 
-def extract_features(text):
-    comment = Comment(text)
+
+"""
