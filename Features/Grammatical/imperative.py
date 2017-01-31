@@ -17,15 +17,15 @@ def is_imperative(tagged_sent):
         last = tagged_sent[-1][0]
 
         # check if the sentence ends with a full stop or exclamation mark(s)
-        if (last == "." or last == "!"):
+        if (last == "." or last == "!"): #TODO: consider cases where an imperative sentences that do not use puncuation (e.g. 'Shut up')
             if (last == "!"):
                 strength += 1
                 # check whether there are multiple exclamation marks at the end of the sentence
-                if (tagged_sent[-2][0] == "!"):
+                if (tagged_sent[-2][0] == "!"): #TODO: this may be fast but... what about '!!?!' at this point i can safely assume all '!' are punctuation so just count occurences?
                     strength +=1
 
             # does the sentence begin with a verb in base form? if so, this is an imperative sentence.
-            if (tagged_sent[0][1] == "VB"):
+            if (tagged_sent[0][1] == "VB" or tagged_sent[0][1] == "MD" ):    # TODO: does use of MODAL verb make imperative more polite/indirect? e.g. 'Would you shut up now!'
                 imperative = True
                 #print ("this is an IMPERATIVE")
 

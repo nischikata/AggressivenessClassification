@@ -1,6 +1,6 @@
 import pickle
 import os.path
-from nltk.stem import PorterStemmer
+from Utils.text_mods import port
 import random
 
 
@@ -18,8 +18,6 @@ def convert_POS(pos_word):
     return pos_tags[pos_word]
 
 subjectivity_dict = {}
-
-port = PorterStemmer()
 
 
 if not os.path.exists(FILEPATH):
@@ -60,30 +58,34 @@ else:
 
 
 # tagged_sent: a sentence in the form of POS-Tag tuple tokens
-# TODO: ideally the tokens have been spell-checked and corrected ALREADY
 def get_subjectivity(tagged_sent):
     polarity = {"positive": 0.0, "negative": 0.0, "both": 0.0, "neutral": 0.0, "none": 0.0, "subj": 0.0}
 
     for t in tagged_sent:
-        # spellcheck token
 
-
+        token = t[0].lower()
         # check if the token is in the subj dict, else try the stemmed version of the token
-        token = t[0] if t[0] in subjectivity_dict else port.stem(t[0])
+        token = token if token in subjectivity_dict else port.stem(token)
 
         if token in subjectivity_dict:
             polarity["subj"] += 1
             item = subjectivity_dict[token]
             #item looks like {pos: {"strength": strength, "stemmed": stemmed, "polarity": polarity}}
 
-            tag = t[1][:2] # only take the first 2 chars - we don't care about subcategories of pos tags
+            tag = t[1][:2]  # only take the first 2 chars - we don't care about subcategories of pos tags
 
             # check if the tag of this token is available for the lexicon item that was found
             # e.g. token = ("blood", "NN") ... see if there is an NN-tag entry for the "blood" item
             # yes there is:
             # blood {'JJ': {'stemmed': False, 'polarity': 'neutral', 'strength': 0.5},
             #        'NN': {'stemmed': False, 'polarity': 'negative', 'strength': 0.5}}
-            tag = tag if tag in item else "anypos"
+
+            if tag not in item:
+                if tag == 'RB':     # adverb is close enought to adjectiv
+                    tag = 'JJ'
+                else:
+                    tag = 'anypos'
+
             if tag in item:
                 # print "matching POS tag found for ", token, " tag: ", tag
                 data = item[tag]
@@ -92,7 +94,7 @@ def get_subjectivity(tagged_sent):
 
             else:
                 # TODO: decide: take a random entry from the item dict or nothing?
-                # print "choosing random tag..."
+                # right now I am choosing a random entry and add its value
                 random_tag = random.choice(item.keys())
                 data = item[random_tag]
                 polarity[data["polarity"]] += data["strength"]

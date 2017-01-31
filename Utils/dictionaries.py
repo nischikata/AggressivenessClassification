@@ -16,6 +16,8 @@ def in_urbanDict(term):
     True
     >>> in_urbanDict("White House!??") # urban dictionary is able to deal with punctuation -> cool!
     True
+    >>> in_urbanDict("don't")
+    True
     """
     return ud.define(term) != []
 
@@ -45,6 +47,8 @@ def in_regularDict(word):
     True
     >>> in_regularDict("House!") # cannot deal with punctuation!
     False
+    >>> in_regularDict("Shouldn't") # contractions are ok
+    True
     """
     return en_Dict.check(word)
 

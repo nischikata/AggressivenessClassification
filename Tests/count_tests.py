@@ -51,10 +51,3 @@ def test_ttr(test_input, expected):
     assert count.get_wordcounts(test_input)["ttr"] == expected
 
 
-@pytest.mark.parametrize("test_input, expected", [
-    ("Hello hello!", 1),
-    ("Hello! How are you? What's your name? Nice to meet you!!", 4),
-    ("Hey... What's up?", 1)# 4/6
-])
-def test_count_sents(test_input, expected):
-    assert count.count_sents(test_input) == expected

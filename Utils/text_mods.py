@@ -3,14 +3,18 @@ import nltk.data
 import re
 from dictionaries import en_Dict, basic_leet_nums
 import editdistance
+from Features.Lexical.lexical import get_lexical_features
+from nltk.stem import PorterStemmer
 
+port = PorterStemmer()
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
-#en_Dict = enchant.Dict("en_US")
-
-#basic_leet_nums = {'0': 'o', '1': 'i', '2': 'r', '3': 'e', '4': 'a', '5': 's', '6': 'b', '7': 't', '8': 'B', '9': 'g'}
 
 # Text modification module
+
+def lowercase_n_stem(token):
+    return port.stem(token.lower())
+
 
 def replace_dont(string_sent):
     """
@@ -43,12 +47,11 @@ def strip_punctuation(string_text, seperate_contractions=False, punc = punctuati
             string_text = string_text.replace("`", " ")
     return ''.join(c for c in string_text if c not in punc)
 
-def strip_surrounding_punctuation(string_text, leading = '!(\'"`{<>', trailing = '\'"`)]<>?.,;!'):
-    stripped = string_text.lstrip(leading).rstrip(trailing)
+def strip_surrounding_punctuation(token, leading ='!(\'"`{<>', trailing ='\'"`)]<>?.,;!'):
+    stripped = token.lstrip(leading).rstrip(trailing)
     return stripped
 
 
-#
 def get_sents(raw_comment):
     """
     Divides a raw string comment into sentences per paragraph
@@ -62,10 +65,11 @@ def get_sents(raw_comment):
     """
     # TODO: use ellipsis as end of sentene too? But if I do this, I MUST call normalize_ellipsis(raw_comment) RIGHT HERE
     # This poses the next question though: What happens to a sentence like this 'Hello... !" TODO: investigate!!
-    raw_comment = normalize_ellipsis(raw_comment)
+    modified = handle_spaced_ellipsis(raw_comment)
+    modified = normalize_ellipsis(modified)
     sents = []
 
-    paragraphs = [p for p in raw_comment.split('\n') if p]
+    paragraphs = [p for p in modified.split('\n') if p]
     # and here, sent_tokenize each one of the paragraphs
     for paragraph in paragraphs:
 
@@ -295,14 +299,16 @@ def handle_spacing(raw_comment):
     {'spaced_words_count': 2, 'modified_string': 'This is   stupid!'}
     >>> handle_spacing("B.a.s.t.a.r.d!")
     {'spaced_words_count': 1, 'modified_string': 'Bastard!'}
+    >>> handle_spacing("you i*d*i*o*t!")
+    {'spaced_words_count': 1, 'modified_string': 'you idiot!'}
     """
     count = 0
     modified = ""
     search_string = raw_comment
-    pattern = re.compile('(^|\s)(([a-zA-Z])( |$|[.!?])){3,}')
+    pattern = re.compile('(^|\s)(([a-zA-Z])( |$|[.!?*])){3,}')
     f = pattern.search(search_string)
     while f:
-        word = f.group()[0] + strip_punctuation(f.group()[1:-1], False, " .!") + f.group()[-1]
+        word = f.group()[0] + strip_punctuation(f.group()[1:-1], False, " .!*") + f.group()[-1]
         if len(word) < f.group():
             count += 1
 
@@ -313,6 +319,31 @@ def handle_spacing(raw_comment):
     modified += search_string
 
     return {"modified_string": modified, "spaced_words_count": count}
+
+
+def handle_spaced_ellipsis(raw_comment):    # TODO: TEST this!
+    """
+    collapses spaced ellipsis e.g. '. . .' -> '...'
+    :param raw_comment:
+    :return:
+    >>> handle_spaced_ellipsis("This sucks. . . .!")
+    'This sucks....!'
+    """
+    modified = ""
+    search_string = raw_comment
+    #pattern = re.compile('(([\.])( |$)){3,}')
+    pattern = re.compile('(([\.])( )){2,}[\.]')
+    f = pattern.search(search_string)
+    while f:
+        word = strip_punctuation(f.group(), False, " ")
+
+        modified += search_string[0:f.start()] + word
+        search_string = search_string[f.end():]
+        f = pattern.search(search_string)
+
+    modified += search_string
+    return modified
+
 
 
 # PLAYING WITH DECORATORS  --- How cooooool is that???? :-))))))
@@ -377,40 +408,64 @@ def fix_word(w):
     return w
 
 
-# TODO testen ob es auch mit absaetzen funktioniert
-# TODO idealerweise kann ich da den ganzen comment reinschieben
-# und bekomme den normalisierten komment heraus, inklusive einen sub-feature vector
-
-def normalize_comment(raw_sentence):
+def normalize_comment(raw_comment):
     """
+    returns a noise corrected and normalized version of the comment, including a set of features
     :param raw_sentence: string
     :return: string
-    >>> sent = "Hey a$$hole, give me $300!"
+    >>> sent = "Hey a$$hole, give me $100!"
     >>> normalize_comment(sent)
-    'Hey asshole, give me $ 300!'
-    >>> sent = "Th@ts $tup!d! 5hu7 y0u2 724p."
+    {'normalized_comment': 'Hey asshole, give me $ 100!', 'features': {'lengthening_counts': 0, 'spaced_words_count': 0, 'edit_distance': 3L}}
+    >>> sent = "Th@ts $tuuuuuup!d! 5hu7 y0u2 724p."
     >>> normalize_comment(sent)
-    'Thats stupid! shut your trap.'
+    {'normalized_comment': 'Thats stupid! shut your trap.', 'features': {'lengthening_counts': 1, 'spaced_words_count': 0, 'edit_distance': 15L}}
     >>> normalize_comment("If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?.... ")
-    ''
+    {'normalized_comment': "If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?...  ", 'features': {'lengthening_counts': 0, 'spaced_words_count': 0, 'edit_distance': 0L}}
     """
-    processed = normalize_ellipsis(raw_sentence)
-    #TODO:
-    # find sequences of . and if they are not of length 1 or 3, then change them to length 3
+
+    processed = handle_spaced_ellipsis(raw_comment)     # CAUTION handle_spaced_ellipsis has not been tested thoroughly
+    processed = normalize_ellipsis(processed)
+    ellipsis_count = processed.count("...")     # ellipsis feature
+
+    fixed_spacing = handle_spacing(processed)
+    processed = fixed_spacing["modified_string"]
+
     # 1. split into tokens by " "
     tokens = processed.split(" ")
-    processed_sent = ""
+    processed_comment = ""
     # 2. find tokens that contain non alphanumeric chars but keep punctuation ( . , ? ! % () "" ' ) and similar intact
     # look for chars like @#%*$ or numbers within a word
     lengthening = 0
+    edit_distance = 0
+    count_modified_tokens = 0
+
+    # starting with spellchecker and word-list features...
+    features = {"no_dict": 0, "in_dict": 0, "urbdict_only": 0, "blacklist": 0, "polite": 0}
 
     for token in tokens:
         modified_token = fix_word(token)
+
+        # edit distance shows how much a token has been altered
         ed = editdistance.eval(token, modified_token)
+        edit_distance += ed
+
+        if ed > 0:  #counting the number of tokens that were 'fixed'
+            count_modified_tokens += 1
+
+        features = get_lexical_features(strip_surrounding_punctuation(token), features)
+
         if len(modified_token) < len(token):
             lengthening += 1
-        processed_sent += modified_token + " "
+        processed_comment += modified_token + " "
 
-    return processed_sent[:-1]
+    features.update({"modified_tokens_count": count_modified_tokens, "lengthening_counts": lengthening,
+                     "edit_distance": edit_distance, "spaced_words_count": fixed_spacing["spaced_words_count"],
+                     "ellipsis_count": ellipsis_count})
+
+    return {"normalized_comment": processed_comment[:-1],
+            "features": features}
 
 
+#print normalize_comment("Hey yo! what's up dude? shit.")
+#print normalize_comment("If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?.... ")
+#print normalize_comment("You are a stuuuuupid l y i n g  b@$t@rd......!")

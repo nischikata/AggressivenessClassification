@@ -1,14 +1,18 @@
 from __future__ import division     # otherwise / is integer division
+from Utils.text_mods import lowercase_n_stem, strip_surrounding_punctuation
 
 def get_ttr(token_list):
-    #TODO: this is just a primitive form of lexical diversity - must research more into this
+    """
+    expects a list of tokens that have punctuation already stripped
 
-    lowercase_tokens = list(map(lambda x: x.lower(), token_list))#map(str.lower, token_list)
+    Note: don't expect too much from stemming (e.g. 'went' is not stemmed to 'go' it simply stays the same
+    """
+    lowercase_tokens = list(map(lambda x: lowercase_n_stem(x), token_list))#map(str.lower, token_list)
     return len(set(lowercase_tokens)) / len(token_list)
 
 
 """
-o: the simplest way to assess the amount of diversity would simply be to count the number of different terms in a sample.
+the simplest way to assess the amount of diversity would simply be to count the number of different terms in a sample.
 This measure has been referred to in the past as Number of Different Words (NDW) and is now conventionally referred to
 as Types. The problem here is obvious: you could not reliably compare a 75-word sample to a 100-word sample, let alone
 a 750-word sample. To account for this, researchers developed whats called a Type-to-Token  Ratio (TTR). This figure

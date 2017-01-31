@@ -13,6 +13,7 @@ pardon
 pardon me
 perhaps
 please
+pls
 with pleasure
 prefer
 reassure
@@ -20,6 +21,8 @@ seem
 slightly
 sorry
 thank
+thanks
+thanx
 thank you
 valued
 welcome

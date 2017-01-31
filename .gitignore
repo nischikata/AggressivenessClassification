@@ -10,6 +10,7 @@ Data/.DS_Store
 *.pyc
 venv/
 stanford-postagger-full-2015-12-09/
+stanford-postagger-full-2016-10-31/
 subjectivity_dict.pickle
 /politeness_dict.pickle
 /blacklist_dict.pickle
