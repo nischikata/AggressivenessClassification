@@ -6,47 +6,19 @@ from Features.Lexical.subjectivity import get_subjectivity
 from Features.Grammatical.imperative import is_imperative
 from Features.Other.counters import get_wordcounts, get_punctuation_stats, get_sent_counts, get_whitespace_ratio
 
-"""
-# create a comment object with all the different representations of the comment text
-# (raw, punctuation stripped, raw sentences, punctuation stripped sentences, spellcorrected, POS tagged...)
-
-also should include fileid
-
-I guess i will move EVERYTHING from the counters.py into this class... makes sense, right?
-
-
-
-def get_sent_counts(comment):
-
-    sents = get_sents(comment)
-    sent_lengths = []
-
-
-    for sent in sents:
-            modified = sent.replace("'", " ")
-            words = strip_punctuation(modified, '!"()-./:;,?[\\]`').split()
-            l = len(words)
-            sent_lengths.append(l)
-
-            #We still want punctuation for POS Tagging:
-            tagged_sent = get_tagged_sent(sent)
-            imp = is_imperative(tagged_sent)
-            subj = get_subjectivity(tagged_sent)
-"""
-
-
 
 class Comment:
-    def __init__(self, raw_text, fileid="", category=0):
-        self.raw = raw_text
+    def __init__(self, raw_text, fileid):
+        self.raw = raw_text     # raw ... 'unprocessed', unmodified
         self.fileid = fileid
-        self.cat = category
+
+        self.label = 1 if fileid[0] == 'a' else 0   # 1 ... aggressive, 0 ... not aggressive (extract from filepath)
 
         paras = get_sents(self.raw)
-        self.cnt_paras = len(paras)
+        self.paragraph_count = len(paras)
         self.raw_sents = flatten(paras)
 
-        self.features = {"paras_count": self.cnt_paras}
+        self.features = {"paras_count": self.paragraph_count}
 
         self.sents_processed = self.__compute_sents_variations()
         self.features.update(get_sent_counts(self.get_sent_tokens_wo_punctuation()))
@@ -110,7 +82,7 @@ class Comment:
         return self.features['word_count']
 
     def count_paras(self):
-        return self.cnt_paras
+        return self.paragraph_count
 
     def count_sents(self):
         return len(self.get_sent_tokens_wo_punctuation())
@@ -130,7 +102,12 @@ class Comment:
             for k in polarity:
                 polarity[k] += subj_sent[k]
 
-        return {'subj_none': polarity['none'], 'subj': polarity['subj'], 'subj_pos': polarity['positive'], 'subj_neg': polarity['negative']}
+        all = polarity['none'] + polarity['subj']
+        subj_ratio = 0 if all == 0 else polarity['subj']/all
+        subj_pos_ratio = 0 if all == 0 else polarity['positive']/all
+        subj_neg_ratio = 0 if all == 0 else polarity['negative']/all
+
+        return {'subj_ratio': subj_ratio, 'subj_pos_ratio': subj_pos_ratio, 'subj_neg_ratio': subj_neg_ratio}
 
 
     def get_imperative_features(self):
@@ -171,19 +148,52 @@ class Comment:
 
         return ellipsis_count
 
+    def get_label(self):
+        """
+        :return: 0 or 1
+        """
+        return self.label
+
+    def get_category(self):
+        return 'not aggressive' if self.label == 0 else 'aggressive'
+
+# P R I N T I N G
+
+    def print_feature_dict(self):
+
+        print "\n\n------------------------------------" \
+              "\n {:<29} {:10}" \
+              "\n------------------------------------".format("FEATURE", "VALUE")
+
+        for key, value in sorted(self.features.items()):
+            print " {:<25} {:10.4f}".format(key, value)
+
+        print "------------------------------------\n"
 
 
-
-#co = Comment("Would you stop that bullsh*t...! \n$h1t can happen  a l l   the 71m3. N!99a!", "123")
-"""
-co = Comment("2342 23423 1231 2341!", "123")
-print co.get_raw_preprocessed_comment()
-print "\n---- FEATURES ----"
-f = co.features
-
-for k, v in f.items():
-    print " ", k, " --> ", v
+    def print_normalized_sents(self):
+        print "\n---------NORMALIZED SENTENCES-------------------------------------------------------------"
+        for sent in self.sents_processed["normalized"]:
+            print "  ", sent
+        print "------------------------------------------------------------------------------------------\n"
 
 
+    def print_POStagged_sents(self):
+        print "\n---------POS TAGGED SENTENCES-------------------------------------------------------------"
+        for sent in self.sents_processed["pos_tagged"]:
+            print "  ", sent
+        print "------------------------------------------------------------------------------------------\n"
 
-"""
+
+    def print_sent_tokens_stripped(self):
+        print "\n---------NORMALIZED TOKENS PER SENTENCE---------------------------------------------------"
+        for sent in self.sents_processed["tokens_stripped"]:
+            print "  ", sent
+        print "------------------------------------------------------------------------------------------\n"
+
+
+    def print_original_sents(self):
+        print "\n---------ORIGINAL SENTENCES---------------------------------------------------------------"
+        for sent in self.raw_sents:
+            print "  ", sent
+        print "------------------------------------------------------------------------------------------\n"

@@ -19,7 +19,9 @@ def in_urbanDict(term):
     >>> in_urbanDict("don't")
     True
     """
-    return ud.define(term) != []
+    # TODO: Error handling (encoding problems, offline, server down,....)
+    defs = ud.define(term.encode('utf8'))
+    return defs != []
 
 
 def get_best_UrbanDefinition(term):

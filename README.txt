@@ -34,6 +34,9 @@ SETTING UP THE PROJECT
 ====================================================================================
 
    PROBLEMS ?
+
+   Resources missing:
+   ————————
    Got an error message that looks something like this?
 
    Resource u'corpora/brown' not found.  Please use the NLTK
@@ -44,6 +47,9 @@ SETTING UP THE PROJECT
    >>> nltk.download()
    
    This will open a new window. Find the missing resource (see error your error msg), download it. Done!
+
+   Urban Dictionary
+   ———————————-
    
    
    PyCharm specific Trouble-Shooting

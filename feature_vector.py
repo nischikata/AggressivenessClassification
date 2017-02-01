@@ -7,7 +7,7 @@ from comment import Comment
 
 def get_feature_vector(comment):
     """
-
+    Returns the feature vector for the given Comment
     :param comment: Comment object
     :return: numpy array
     """
@@ -19,12 +19,15 @@ def get_feature_vector(comment):
     as_is = ['exclamation_ratio', 'period_ratio', 'questionmark_ratio', 'whitespace_ratio', 'highlighters_count',
              'paras_count', 'sent_count', 'word_count', 'ttr', 'max_wordlength', 'average_wordlength',
              'median_wordlength','spaced_words_count', 'edit_distance', 'lengthening_counts', 'longest_sent_len',
-             'avg_sent_len', 'median_sent_len', 'shortest_sent_len']
+             'avg_sent_len', 'median_sent_len', 'shortest_sent_len', 'subj_ratio', 'subj_pos_ratio',
+             'subj_neg_ratio']
+
     per_sent = ['sent_endings_count', 'ellipsis_count', 'modal_count', 'imperative_count', 'one_char_token_count',
                 'connectors_count']
+
     per_tokens = ['no_dict', 'urbdict_only', 'in_dict', 'polite', 'blacklist', 'noise_count', 'all_caps_count',
-                  'long_words_count', 'modified_tokens_count', 'mixed_case_word_count', 'num_count', 'subj_none',
-                  'subj', 'subj_neg', 'subj_pos']
+                  'long_words_count', 'modified_tokens_count', 'mixed_case_word_count', 'num_count']
+
     per_imperatives = ['imperative_indirect', 'imperative_strength', 'imperative_polite']
 
     for f in as_is:
@@ -51,14 +54,20 @@ def get_feature_vector(comment):
             # this might actually happen, thats ok
             feature_list.append(0)
 
-
-    print feature_list
-    print " ------- "
-    print "len of FEATURE LIST", len(feature_list)
-
-
     return numpy.array(feature_list)
 
 
-co = Comment("Would you stop that bullsh*t...! \n$h1t can happen  a l l   the 71m3. N!99a!", "123")
+"""
+co = Comment("What are you doing, Obama ? ! ?\n This sucks ! ! !", "123")
 get_feature_vector(co)
+print co.get_raw_preprocessed_comment()
+print co.get_POStagged_sents()
+
+print "fileid   ", co.fileid
+
+co.print_feature_dict()
+co.print_normalized_sents()
+co.print_POStagged_sents()
+co.print_sent_tokens_stripped()
+co.print_original_sents()
+"""

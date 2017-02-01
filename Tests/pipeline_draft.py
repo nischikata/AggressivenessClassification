@@ -95,7 +95,7 @@ y = modl["target"]
 
 log.fit(X, y)
 
-#######################TODO write nice method for this mit ausgabe Aggressive / nicht aggressive#######################################
+#######################TODO write nice method for this mit ausgabe Aggressive / nicht aggressive
 # HERE TODO: manueller test:
 manual_test = get_observation("$hit!")
 manual_observation = np.zeros(1)
@@ -123,7 +123,7 @@ print(testmodl["target"])
 # i guess by controlling the random state you do k-fold cross-validation TODO: check how to best do k-fold cross validation
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=4)
 
-trained = log.fit(X_train, y_train)
+log.fit(X_train, y_train)
 y_pred = log.predict(X_test)
 
 print("This is the accuracy")

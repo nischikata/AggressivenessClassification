@@ -64,6 +64,10 @@ def get_subjectivity(tagged_sent):
     for t in tagged_sent:
 
         token = t[0].lower()
+
+        if not token.isalpha():
+            continue
+
         # check if the token is in the subj dict, else try the stemmed version of the token
         token = token if token in subjectivity_dict else port.stem(token)
 

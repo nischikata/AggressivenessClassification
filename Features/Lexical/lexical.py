@@ -15,7 +15,7 @@ def get_lexical_features(token, feature_dict):
     >>> get_lexical_features("300", {'blacklist': 0, 'urbdict_only': 0, 'no_dict': 0, 'polite': 0, 'in_dict': 0})
     {'blacklist': 0, 'urbdict_only': 0, 'in_dict': 0, 'polite': 0, 'no_dict': 0}
     """
-    if not any(str.isalpha(c) for c in token):
+    if not any(c.isalpha() for c in token):
         return feature_dict
 
 

@@ -168,7 +168,7 @@ def handle_exclamationMark(token):
     >>> handle_exclamationMark("tr!99er")
     'tri99er'
     """
-    if '!' in token:
+    if '!' in token and any(c.isalpha() for c in token):
         punc = True
         index = len(token) - 1
         new_token = ""
@@ -278,7 +278,7 @@ def handle_other_noise(token):
     >>> handle_other_noise("10%!")
     '10%!'
     """
-    if any(str.isalpha(c) for c in token):  # and not any(str.isdigit(c) for c in token):
+    if any(c.isalpha() for c in token):  # and not any(str.isdigit(c) for c in token):
         token = token.replace("#", 'h')
         token = token.replace("%", 'i')
         # token = token.replace("+", 't') # this is problematic where '+' is a replacement for 'and'
@@ -332,7 +332,7 @@ def handle_spaced_ellipsis(raw_comment):    # TODO: TEST this!
     modified = ""
     search_string = raw_comment
     #pattern = re.compile('(([\.])( |$)){3,}')
-    pattern = re.compile('(([\.])( )){2,}[\.]')
+    pattern = re.compile('(([\.|?|!])( )){2,}[\.|?|!]')
     f = pattern.search(search_string)
     while f:
         word = strip_punctuation(f.group(), False, " ")
