@@ -57,7 +57,7 @@ testing_set = featuresets[pivot:]
 classifier = nltk.NaiveBayesClassifier.train(training_set)
 print("Naive Bayes Algo accuracay: ", (nltk.classify.accuracy(classifier, testing_set))* 100)
 
-#classifier.show_most_informative_features(20)
+classifier.show_most_informative_features(20)
 
 def accuracy():
     random.shuffle(featuresets)
@@ -69,10 +69,12 @@ def accuracy():
     acc = nltk.classify.accuracy(classifier, testing_set)
     print("Naive Bayes Algo accuracay: ", acc * 100)
     return acc
-
+"""
 n = 25
 acc = 0
 for i in range(n):
     acc += accuracy()
 
 print "accuracy", acc/n
+"""
+    

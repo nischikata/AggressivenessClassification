@@ -6,6 +6,7 @@ from Utils.tiny_helpers import flatten
 from numpy import median, average
 from Features.Lexical.diversity import get_ttr
 import nltk.data
+from Utils.tiny_helpers import is_number_or_monetary
 
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -107,8 +108,14 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
     mixed_case_word_count = 0
     all_caps = {"count_all": 0, "one_char_count": 0}
 
+
+
+
     for token in tokens:
-        if token.isdigit():
+        # TODO replace m-dash with blank
+        # TODO remove dash
+
+        if is_number_or_monetary(token):
             nums += 1
         else:
 
@@ -122,6 +129,7 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
 
             else:   # wl > 1
                 if not token.isalpha():
+                    print "noise token:  ", token
                     noise_count += 1
 
                 elif token.isupper():

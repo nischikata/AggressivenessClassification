@@ -1,6 +1,7 @@
 from Utils.dictionaries import in_regularDict, in_urbanDict
 from Features.Lexical.politness import is_polite
 from Features.Lexical.blacklist import is_blacklisted
+from nltk.corpus import stopwords
 
 def get_lexical_features(token, feature_dict):
     """
@@ -19,7 +20,7 @@ def get_lexical_features(token, feature_dict):
         return feature_dict
 
 
-    if in_regularDict(token):
+    if token in stopwords.words('english') or in_regularDict(token):
         feature_dict["in_dict"] += 1
     elif in_urbanDict(token):
         feature_dict["urbdict_only"] += 1

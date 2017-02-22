@@ -18,8 +18,15 @@ SETTING UP THE PROJECT
     $ pip install -r requirements.txt
     
 1.4 Test code
-    $ python runClassifier.py # TODO: DATEINAME ERSETZEN !!!!
-    # TODO: weitere ANWEISUNGEN
+    $ python runClassifier.py
+    # to test predictions in the REPL use 
+    # >>> from model import get_prediction
+    # >>> get_prediction(u"Hello world!", False)
+    #
+    # to get accuracy, precision and recall of the dataset using randomized train/test/split:
+    # >>> from model import test_model
+    # >>> test_model()
+    
 1.5 Deactivate virtual environment
     $ deactivate
     
@@ -36,7 +43,7 @@ SETTING UP THE PROJECT
    PROBLEMS ?
 
    Resources missing:
-   ————————
+   ------------------
    Got an error message that looks something like this?
 
    Resource u'corpora/brown' not found.  Please use the NLTK
@@ -48,8 +55,12 @@ SETTING UP THE PROJECT
    
    This will open a new window. Find the missing resource (see error your error msg), download it. Done!
 
+
    Urban Dictionary
-   ———————————-
+   ----------------
+   The project utilizes the Urban Dictionary API. 
+   Internet access (and permission if your computer asks for it) are required in ordered to make predictions.
+   
    
    
    PyCharm specific Trouble-Shooting

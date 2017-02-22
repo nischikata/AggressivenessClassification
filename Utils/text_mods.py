@@ -1,3 +1,4 @@
+from __future__ import division
 from string import punctuation
 import nltk.data
 import re
@@ -28,6 +29,30 @@ def replace_dont(string_sent):
     """
     i = string_sent.lower().find("don't")
     return string_sent[:i] + string_sent[i:].replace("on't", "o not", 1)  # only replace the first occurrence
+
+
+def separate_contractions(string_sent):
+    """
+    seperates contracted words by replacing the single quote with a blank. only separates common contractions!
+    See doctest example
+    :param string_sent:
+    :return:
+
+    separate_contractions("I've seen things you people wouldn't believe. At'tack s'hips on fire of'f the shoulder of Orion.")
+    "I ve seen things you people wouldn t believe. At'tack s'hips on fire of'f the shoulder of Orion."
+    """
+    modified = ""
+    search_string = string_sent
+    pattern = re.compile('([a-z]{1,}\'(ll|d|ve|s|re|t)($|[\.!? ]))', re.IGNORECASE)
+    f = pattern.search(search_string)
+    while f:
+        match = f.group()
+        match = match.replace("'", " ")
+        modified += search_string[0:f.start()] + match
+        search_string = search_string[f.end():]
+        f = pattern.search(search_string)
+    modified += search_string
+    return modified
 
 
 def strip_punctuation(string_text, seperate_contractions=False, punc = punctuation):
@@ -168,26 +193,20 @@ def handle_exclamationMark(token):
     >>> handle_exclamationMark("tr!99er")
     'tri99er'
     """
-    if '!' in token and any(c.isalpha() for c in token):
-        punc = True
-        index = len(token) - 1
-        new_token = ""
-        while index >= 0:
-            char = token[index]
-            index -= 1
 
-            if punc and char not in punctuation:
-                punc = False
+    # strip trailing punctuation only then if there's still a '!' in there replace it with an 'i'
+    stripped = strip_surrounding_punctuation(token, leading="")
 
-            if char == '!' and not punc:
-                char = 'i'
+    if '!' in stripped and any(c.isalpha() for c in token):
 
-            new_token = char + new_token
+        stripped = str.replace(stripped, "!", "i")
 
-        return new_token
+        token = stripped + token[len(stripped):]
 
-    else:
-        return token
+    return token
+
+
+
 
 
 def handle_numeric_1337_speak(token):
@@ -345,6 +364,48 @@ def handle_spaced_ellipsis(raw_comment):    # TODO: TEST this!
     return modified
 
 
+def normalize_comma(raw_comment):
+    modified = ""
+    search_string = raw_comment
+    pattern = re.compile(r',{1,}[ ]*')
+    f = pattern.search(search_string)
+    while f:
+        modified += search_string[0:f.start()] + ", "
+        search_string = search_string[f.end():]
+        f = pattern.search(search_string)
+
+    modified += search_string
+    return modified
+
+
+def normalize_mDash(raw_comment):
+    """
+
+    :param raw_comment:
+    :return:
+
+    >>> normalize_mDash("Hello--world. Hello ----- world.")
+    'Hello -- world. Hello -- world.'
+    """
+    modified =""
+    search_string = raw_comment
+    pattern = re.compile('[ ]*[-]{2,}[ ]*')
+    f = pattern.search(search_string)
+    while f:
+        modified += search_string[0:f.start()] + " -- "
+        search_string = search_string[f.end():]
+        f = pattern.search(search_string)
+    modified += search_string
+    return modified
+
+
+def punc_style_features(comment):
+    pattern = re.compile(r'[!?,]{2,}')
+    results = re.findall(pattern, comment)
+    repeated_punc_count = len(results)
+    avg_rep_punc_len = 0 if repeated_punc_count == 0 else reduce(lambda x, y: x + len(y), results, 0) / repeated_punc_count
+    return {"rep_punc_count": repeated_punc_count, "rep_punc_len_avg": avg_rep_punc_len}
+
 
 # PLAYING WITH DECORATORS  --- How cooooool is that???? :-))))))
 # http://stackoverflow.com/questions/739654/how-to-make-a-chain-of-function-decorators-in-python?rq=1
@@ -425,6 +486,12 @@ def normalize_comment(raw_comment):
 
     processed = handle_spaced_ellipsis(raw_comment)     # CAUTION handle_spaced_ellipsis has not been tested thoroughly
     processed = normalize_ellipsis(processed)
+    processed = normalize_mDash(processed)
+
+    #extract punctuation style features
+    punc_style = punc_style_features(processed)
+
+    processed = normalize_comma(processed)
     ellipsis_count = processed.count("...")     # ellipsis feature
 
     fixed_spacing = handle_spacing(processed)
@@ -460,7 +527,8 @@ def normalize_comment(raw_comment):
 
     features.update({"modified_tokens_count": count_modified_tokens, "lengthening_counts": lengthening,
                      "edit_distance": edit_distance, "spaced_words_count": fixed_spacing["spaced_words_count"],
-                     "ellipsis_count": ellipsis_count})
+                     "ellipsis_count": ellipsis_count, "mdash_count": processed_comment.count("--")})
+    features.update(punc_style)
 
     return {"normalized_comment": processed_comment[:-1],
             "features": features}

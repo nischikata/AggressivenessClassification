@@ -54,19 +54,16 @@ def get_SVM_model():
     pass
 
 
-def test_model(test_size, random_state):
+def test_model():
     dataset = get_dataset()
     model = LogisticRegression()
     X = dataset["data"]
 
     y = dataset["target"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=4)
 
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
-
-    #TODO finish
-
 
     # wichtig, zuerst die tatsaechlichen werte, dann die predicted
     confusion = metrics.confusion_matrix(y_test, y_pred)
@@ -78,21 +75,11 @@ def test_model(test_size, random_state):
     print(confusion)
 
     accuracy = metrics.accuracy_score(y_test, y_pred)
-    print "\n\nAccuracy: ", accuracy
-
     recall = metrics.recall_score(y_test,y_pred)
-    print "\n\nRecall or Sensitivity or True Positive Rate: ", recall # want to maximize, best possible value = 1.0
-
-    # when the actual value is negative, how often is the prediction correct? want to maximize, best possible value = 1.0
-    print "\n\nSpecifity: ", (TN/float(TN+TP))
-
-    print "\n\nFalse Positive Rate: ", (FP/float(TN+TP))
-
     #how precise the classifier is when prediciton a positive instance
-    print "\n\nPrecision: ", (TP/float(TP + FP))
     precision = metrics.precision_score(y_test, y_pred)
-    print(precision)
-    return [accuracy, precision, recall]
+
+    return { "accuracy": accuracy, "precision": precision, "recall": recall}
 
 
 def get_prediction(comment, aggressive=False): # TODO: model type as param
@@ -102,6 +89,10 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
     :param aggressive: True for aggressive
     :return: int
     """
+    # TODO !!!!!!!!!!!!!!!!!
+    print  "TODO: rebuild DATASET ! (out of date!)"
+
+
     label = 'a' if aggressive else 'na'
     # X.reshape(1, -1)
     # 1. compute feature vector for comment
@@ -115,17 +106,4 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
 
     print " EXPECTED:  ", get_text_label(c.get_label()), "    PREDICTED:   ", get_text_label(pred)
     print "------------------------------------------------------------------------------------------\n\n"
-
-
-
-# TODO remove again
-results = [0,0,0]
-n = 25
-
-for i in range(n):
-    r = test_model(0.5, n)
-    results[0] += r[0]
-    results[1] += r[1]
-    results[2] += r[2]
-
-print "avg accuracy: ", results[0]/n, " avg precision: ", results[1]/n, " avg recall: ", results[2]/n
+    
