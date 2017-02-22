@@ -108,13 +108,7 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
     mixed_case_word_count = 0
     all_caps = {"count_all": 0, "one_char_count": 0}
 
-
-
-
     for token in tokens:
-        # TODO replace m-dash with blank
-        # TODO remove dash
-
         if is_number_or_monetary(token):
             nums += 1
         else:
@@ -129,7 +123,6 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
 
             else:   # wl > 1
                 if not token.isalpha():
-                    print "noise token:  ", token
                     noise_count += 1
 
                 elif token.isupper():
@@ -137,7 +130,6 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
 
                 elif not token[1:].islower() and not token[1:].isupper() or token.swapcase().istitle():
                     mixed_case_word_count += 1
-
 
             if wl > WORD_LENGHT_THRESHOLD:
                 long_words_count += 1
@@ -154,39 +146,6 @@ def get_wordcounts(tokens): #TODO rewrite pytest input in count_test.py
             "word_count": len(list_word_lengths) + nums, "median_wordlength": wl_median, "average_wordlength": wl_average,
             "long_words_count": long_words_count, "noise_count": noise_count, "all_caps_count": all_caps,
             "mixed_case_word_count": mixed_case_word_count, "ttr": get_ttr(tokens)}
-
-
-
- # Returns sentence stats:
- # number of sentences;
- # shortest and longest sent, average and median sent length
- # - length measured in tokens without punctuation.
-def get_sent_counts2(comment): #TODO rewrite input, get it form Comment object
-
-    sents = get_sents(comment)
-    sents = flatten(sents)
-    sent_lengths_w = [] # length in words
-    sent_lengths_ch = [] # lenght in characters
-
-
-
-    for sent in sents:
-            words = strip_punctuation(sent, True, '!"()-./:;,?[\\]`').split()
-            l = len(words)
-            sent_lengths_w.append(l)
-            ch = len(sent)
-            w_ch_ratio = l/ch
-            sent_lengths_ch.append(ch)
-
-
-    longest = max(sent_lengths_w)
-    shortest = min(sent_lengths_w)
-    med = median(sent_lengths_w)
-    avg = average(sent_lengths_w)
-
-    #TODO words to characters ratio
-
-    return {"sent_count": len(sents), "shortest": shortest, "longest": longest, "avg": avg, "median": med}
 
 
 def get_sent_counts(tokenized_sents):
