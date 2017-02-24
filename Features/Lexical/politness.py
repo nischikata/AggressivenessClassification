@@ -26,7 +26,6 @@ else:
     pickle_in = open(FILEPATH, "rb")
     polite_terms = pickle.load(pickle_in)
 
-#print polite_terms
 
 def is_polite(term):
     """

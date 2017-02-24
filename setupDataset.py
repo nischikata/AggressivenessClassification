@@ -5,6 +5,7 @@ from nltk.corpus import CategorizedPlaintextCorpusReader
 from nltk import TreebankWordTokenizer
 import pickle
 import os.path
+import time
 
 FILEPATH = "dataset.pickle"
 
@@ -66,8 +67,9 @@ def get_dataset():
     if not os.path.exists(FILEPATH):
 
         corpus = CategorizedPlaintextCorpusReader('Data/', r'(?!\.).*\.txt', word_tokenizer=TreebankWordTokenizer(), cat_pattern=r'(aggressive|not_aggressive)/.*', encoding='utf8')
-
+        print "Starting to compute dataset at  ", time.ctime()
         dataset = compute_dataset(corpus)
+        print "FINISHED to compute dataset at  ", time.ctime()
         save(dataset)
     else:
         dataset = load()

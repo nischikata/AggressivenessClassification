@@ -14,3 +14,5 @@ stanford-postagger-full-2016-10-31/
 subjectivity_dict.pickle
 /politeness_dict.pickle
 /blacklist_dict.pickle
+/stanford-parser-full-2016-10-31/
+/stanford-english-corenlp-2016-10-31-models.jar

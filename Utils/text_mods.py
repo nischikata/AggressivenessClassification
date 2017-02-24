@@ -199,7 +199,7 @@ def handle_exclamationMark(token):
 
     if '!' in stripped and any(c.isalpha() for c in token):
 
-        stripped = str.replace(stripped, "!", "i")
+        stripped = stripped.replace("!", "i")
 
         token = stripped + token[len(stripped):]
 

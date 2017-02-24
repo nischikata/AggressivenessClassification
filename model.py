@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import pickle
 import os.path
@@ -60,7 +61,7 @@ def test_model():
     X = dataset["data"]
 
     y = dataset["target"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=4)
+    X_train, X_test, y_train, y_test = train_test_split(X, y) #, test_size=0.5, random_state=4)
 
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
@@ -79,7 +80,7 @@ def test_model():
     #how precise the classifier is when prediciton a positive instance
     precision = metrics.precision_score(y_test, y_pred)
 
-    return { "accuracy": accuracy, "precision": precision, "recall": recall}
+    return {"accuracy": accuracy, "precision": precision, "recall": recall}
 
 
 def get_prediction(comment, aggressive=False): # TODO: model type as param
@@ -90,7 +91,7 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
     :return: int
     """
     # TODO !!!!!!!!!!!!!!!!!
-    print  "TODO: rebuild DATASET ! (out of date!)"
+    print "TODO: rebuild DATASET ! (out of date!)"
 
 
     label = 'a' if aggressive else 'na'
@@ -106,4 +107,24 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
 
     print " EXPECTED:  ", get_text_label(c.get_label()), "    PREDICTED:   ", get_text_label(pred)
     print "------------------------------------------------------------------------------------------\n\n"
-    
+
+
+def compute_avg(n):
+    acc = 0
+    prec = 0
+    rec = 0
+
+    for i in range(n):
+        r = test_model()
+        acc += r["accuracy"]
+        prec += r["precision"]
+        rec += r["recall"]
+
+    acc /= n
+    prec /= n
+    rec /= n
+
+    print "   recall", rec, "  precision: ", prec, "   accuracy: ", acc
+
+
+compute_avg(25)

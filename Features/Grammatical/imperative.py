@@ -20,12 +20,13 @@ def is_imperative(tagged_sent):
         if last != "?":  # sentences ending with ! . or no punctuation
 
             # does the sentence begin with a verb in base form? if so, this is an imperative sentence.
-            if tagged_sent[0][1] == "VB" or tagged_sent[0][1] == "MD":
+            # checking for "do" at the beginning is due to the verb not being tagged correctly as VB (infinitive)
+            if tagged_sent[0][1] == "VB" or tagged_sent[0][1] == "MD" or tagged_sent[0][0].lower() == "do":
                 imperative = True
 
                 # check for the empathic do (POLITE or FORMAL imperative):
                 # examples: Do sit down. Do take a cookie.
-                if not polite and tagged_sent[0][0] == "Do" and tagged_sent[1][1] == "VB":
+                if not polite and tagged_sent[0][0].lower() == "do" and tagged_sent[1][1] == "VB":
                     polite = True
 
             # does the sentence begin with a verb in base form but has words like
@@ -56,7 +57,10 @@ def is_imperative(tagged_sent):
 
     strength = 0
     if imperative:
-        if (len(strengthcheck) == 1 and strengthcheck[0] == '!') or (len(strengthcheck) == 2 and '?' in strengthcheck):
+        print strengthcheck
+        if (len(strengthcheck)) == 0:
+            pass
+        elif (len(strengthcheck) == 1 and strengthcheck[0] == '!') or (len(strengthcheck) == 2 and '?' in strengthcheck):
             # 1 exclamation mark or at least one question mark and an exclamation mark (or a 2nd question mark)
             # signals moderate strength
             strength = 1
@@ -71,11 +75,20 @@ def is_imperative(tagged_sent):
 def chunk_imperative(tagged_sent):
 
     chunkgram = r"""VB-Phrase: {<DT><,>*<VB>}
+                    VB-Phrase: {<DT><,><VBP>}
                     VB-Phrase: {<RB><VB>}
                     VB-Phrase: {<UH><,>*<VB>}
+                    VB-Phrase: {<UH><,><VBP>}
                     VB-Phrase: {<PRP><VB>}
                     VB-Phrase: {<NN.?>+<,>*<VB>}
-                    Q-Tag: {<,><MD><RB>*<PRP><.>}"""
+                    Q-Tag: {<,><MD><RB>*<PRP><.>*}"""
 
+    """
+    Note:
+    The currently used POS tagger (model='stanford-postagger-full-2016-10-31/models/wsj-0-18-left3words-distsim.tagger')
+    mis-tags occurences of "Do" as "VBP" instead of "VB" in certain cases (e.g. No, don't go. Please, don't go.)
+    Therefore some VB-Phrases use VBP instead of VB. However, this should not lead to false positives since these
+    constructs don't appear to make grammatical sense (afaik).
+    """
     chunkparser = RegexpParser(chunkgram)
     return chunkparser.parse(tagged_sent)
