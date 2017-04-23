@@ -34,4 +34,7 @@ def get_lexical_features(token, feature_dict):
     if is_blacklisted(token):
         feature_dict["blacklist"] += 1
 
+        if token.isupper():
+            feature_dict["blacklist_CAPS"] += 1
+
     return feature_dict

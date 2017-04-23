@@ -32,8 +32,7 @@ def setUp_model():
     pass
 
 
-def get_logReg_model():
-    path = "model_logRegr.pickle"
+def get_logReg_model(path = "model_logRegr.pickle"):
 
     if not os.path.exists(path):
         dataset = get_dataset()
@@ -56,7 +55,7 @@ def get_SVM_model():
 
 
 def test_model():
-    dataset = get_dataset()
+    dataset = get_dataset("dataset.pickle") #TODO:  change DATASETNAME AGAIN
     model = LogisticRegression()
     X = dataset["data"]
 
@@ -90,10 +89,6 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
     :param aggressive: True for aggressive
     :return: int
     """
-    # TODO !!!!!!!!!!!!!!!!!
-    print "TODO: rebuild DATASET ! (out of date!)"
-
-
     label = 'a' if aggressive else 'na'
     # X.reshape(1, -1)
     # 1. compute feature vector for comment

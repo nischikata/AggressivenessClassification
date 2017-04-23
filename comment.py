@@ -4,21 +4,23 @@ from Utils.stanford import get_tagged_sent
 from Utils.tiny_helpers import flatten
 from Features.Lexical.subjectivity import get_subjectivity
 from Features.Grammatical.imperative import is_imperative
-from Features.Other.counters import get_wordcounts, get_punctuation_stats, get_sent_counts, get_whitespace_ratio
+from Features.Other.counters import get_wordcounts, get_punctuation_stats, get_sent_counts, get_whitespace_ratio, \
+    get_paragraph_count, get_alphanum_ratio, get_noise_count
 
 
 class Comment:
     def __init__(self, raw_text, fileid):
-        self.raw = raw_text     # raw ... 'unprocessed', unmodified
+        # remove all occurences of "\r", they're unecessary and only cause problems
+        self.raw = raw_text.replace("\r", "")     # raw ... 'unprocessed', unmodified
         self.fileid = fileid
 
         self.label = 1 if fileid[0] == 'a' else 0   # 1 ... aggressive, 0 ... not aggressive (extract from filepath)
 
         paras = get_sents(self.raw)
-        self.paragraph_count = len(paras)
+        self.paragraph_count = get_paragraph_count(self.raw)    #len(paras)
         self.raw_sents = flatten(paras)
 
-        self.features = {"paras_count": self.paragraph_count}
+        self.features = {"paras_count": self.paragraph_count, "non_alphanum_ratio": get_alphanum_ratio(self.raw)}
 
         self.sents_processed = self.__compute_sents_variations()
         self.features.update(get_sent_counts(self.get_sent_tokens_wo_punctuation()))
@@ -32,6 +34,7 @@ class Comment:
 
         self.features.update(self.get_subjectivity_features())
         self.features.update(get_punctuation_stats(self.raw))
+        self.features["noise_count"] = get_noise_count(self.raw)
 
 
     # HELPERS
@@ -123,9 +126,6 @@ class Comment:
         subj_neg_ratio = 0 if all == 0 else polarity['negative']/all
 
         return {'subj_ratio': subj_ratio, 'subj_pos_ratio': subj_pos_ratio, 'subj_neg_ratio': subj_neg_ratio}
-
-    #def get_punctuation_style_features(self):
-        # TODO get normalized
 
 
     def get_imperative_features(self):

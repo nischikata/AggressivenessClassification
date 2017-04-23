@@ -483,7 +483,11 @@ def normalize_comment(raw_comment):
     >>> normalize_comment("If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?.... ")
     {'normalized_comment': "If there's anything more important than my ego around, I want it caught and shot now.\\nSend an e-mail to: donald@madeinchina.com!!?...  ", 'features': {'lengthening_counts': 0, 'spaced_words_count': 0, 'edit_distance': 0L}}
     """
-
+    # dealing with \n
+    # this matters because \n is used to mark start of new sentence in case of missing punctuation
+    pattern = re.compile(r"\n{1,}")
+    raw_comment = re.sub(pattern, " \n ", raw_comment)
+    # ------------
     processed = handle_spaced_ellipsis(raw_comment)     # CAUTION handle_spaced_ellipsis has not been tested thoroughly
     processed = normalize_ellipsis(processed)
     processed = normalize_mDash(processed)
@@ -507,23 +511,36 @@ def normalize_comment(raw_comment):
     count_modified_tokens = 0
 
     # starting with spellchecker and word-list features...
-    features = {"no_dict": 0, "in_dict": 0, "urbdict_only": 0, "blacklist": 0, "polite": 0}
+    features = {"no_dict": 0, "in_dict": 0, "urbdict_only": 0, "blacklist": 0, "polite": 0, "blacklist_CAPS": 0}
 
     for token in tokens:
-        modified_token = fix_word(token)
+        if token != "\n":
+            isUppercase = token.isupper()
+            modified_token = fix_word(token)
 
-        # edit distance shows how much a token has been altered
-        ed = editdistance.eval(token, modified_token)
-        edit_distance += ed
 
-        if ed > 0:  #counting the number of tokens that were 'fixed'
-            count_modified_tokens += 1
+            # edit distance shows how much a token has been altered
+            ed = editdistance.eval(token, modified_token)
+            edit_distance += ed
 
-        features = get_lexical_features(strip_surrounding_punctuation(token), features)
+            if isUppercase:
+                modified_token = modified_token.upper()
 
-        if len(modified_token) < len(token):
-            lengthening += 1
+            if ed > 0:  #counting the number of tokens that were 'fixed'
+                count_modified_tokens += 1
+
+            features = get_lexical_features(strip_surrounding_punctuation(modified_token), features)
+
+            if len(modified_token) < len(token):
+                lengthening += 1
+        else:
+                modified_token = token  # dealing with \n
         processed_comment += modified_token + " "
+
+    # dealing with \n
+    pattern = re.compile(r"[ ]{1,}\n{1,}[ ]{1,}")
+    processed_comment = re.sub(pattern, "\n", processed_comment)
+    #--------------
 
     features.update({"modified_tokens_count": count_modified_tokens, "lengthening_counts": lengthening,
                      "edit_distance": edit_distance, "spaced_words_count": fixed_spacing["spaced_words_count"],

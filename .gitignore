@@ -16,3 +16,11 @@ subjectivity_dict.pickle
 /blacklist_dict.pickle
 /stanford-parser-full-2016-10-31/
 /stanford-english-corenlp-2016-10-31-models.jar
+.ipynb_checkpoints/
+NOTES_statistics.txt
+tests__matplot_firststeps.ipynb
+tests__inner_noise.ipynb
+tests__t-test.ipynb
+tests__wiki_dataset.py
+tests__feature_selection.ipynb
+Data/wiki/

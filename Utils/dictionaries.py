@@ -52,7 +52,7 @@ def in_regularDict(word):
     >>> in_regularDict("Shouldn't") # contractions are ok
     True
     """
-    return en_Dict.check(word)
+    return en_Dict.check(word.lower())  # the enchant dictionary is CASE SENSITIVE that's why we use lowercase
 
 
 def auto_correct(word):

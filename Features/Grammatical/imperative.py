@@ -57,7 +57,6 @@ def is_imperative(tagged_sent):
 
     strength = 0
     if imperative:
-        print strengthcheck
         if (len(strengthcheck)) == 0:
             pass
         elif (len(strengthcheck) == 1 and strengthcheck[0] == '!') or (len(strengthcheck) == 2 and '?' in strengthcheck):

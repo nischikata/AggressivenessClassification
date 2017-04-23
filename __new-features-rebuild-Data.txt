@@ -1,0 +1,42 @@
+
+If new features are being added then the following steps are necessary:
+
+1. remove (rename) the current dataset.pickle
+2. remove (rename) the current models, e.g. model_logRegr.pickle
+
+
+
+If you want to add a feature column instead:
+1. load the dataset
+2. compute column of features for the exact same comments in the exact same order! (check setupDataset for how it's done there)
+3. either INSERT* the new feature column at a desired index:
+
+	fv = np.array([[1,2,3],[4,5,6]])
+	new_fv = np.insert(fv, 2, [7,8], 1) # insert [7, 8] at column index 2, at dimension index 1
+	new_fv: array([[1, 2, 7, 3],
+	               [4, 5, 8, 6]])
+			   
+	 Note: the original array (fv) remains untouched:
+	 array([[1, 2, 3],
+	        [4, 5, 6]])
+		
+	so you have to save it into a new array object
+
+
+or REPLACE an existing column:
+	fv: 	 array([[1, 2, 3],
+	            [4, 5, 6]])
+			
+	fv[:, 2] = [-1, -2] # replace column at index 2 with [-1, -2]
+
+	fv: array([[ 1,  2, -1],
+	       [ 4,  5, -2]])
+   
+	   Note: Other than insert, this actually alters the data! Keep that in mind!
+
+
+
+4. save the dataset to a file
+*ATTENTION: especially when you are INSERTING a column it is HIGHLY RECOMMENDED to dump into a different file from the one where you read the dataset from. WHY? Because if you run the code multiple times (testing/debugging... you know), then you will end up inserting an additional column EACH BLOODY TIME!
+
+Anyway in general it's probably good practice to save into a different output file unless you're 100% sure of what you're doing ;-)
