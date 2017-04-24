@@ -397,6 +397,33 @@ def normalize_mDash(raw_comment):
         f = pattern.search(search_string)
     modified += search_string
     return modified
+    
+
+def remove_nontextual(raw_comment):
+    """
+    removes nontextual elements (e.g. '====>' from comment 
+    :param raw_comment:
+    :return:
+    
+    >>> remove_nontextual("   >> hey ! === @%^ =cool=")
+    'hey ! =cool='
+    >>>
+    >>> remove_nontextual("^&^$ hello \/\/ orld ## =>hello")
+    'hello orld =>hello'
+    """   
+    # remove nontextual elements that contain a '$' but doesn't remove single or multiple '$' ('$$') by itself
+    modified = re.sub(r'\B[$]*[#@^*()+=~`<>%&\\|/]+[$]+[#@^*()&+=~`<>%\\|/]*($|\s)|\B[$]*[#&@^*()+=~`<>%\\|/]*[$]+[#&@^*()+=~`<>%\\|/]+[$]*($|\s)', " ", raw_comment)
+    
+    # remove nontextual elements that contain '&' but does not remove single or multiple occurences of '&' by itself
+    modified = re.sub(r'\B[&]*[#@^*()+=~`<>%$\\|/]+[&]+[#@^*()+=~`<>%$\\|/]*($|\s)|\B[#@^*()+=$~`<>%\\|/]*[&]+[#@^$*()+=~`<>%\\|/]+[&]*($|\s)', " ", modified)
+    
+    # r'\B[#@^*()+=~`<>%]+($|\s)' #\B non word boundary, $ end of string, \s whitespace
+    modified = re.sub(r'\B[#@^*()+=~`<>%\\|/]+($|\s)', " ", modified)
+    
+    modified = re.sub(r'[ ]{2,}', " ", modified) # replace multiple spaces by a single space
+    modified = re.sub(r'^\s|\s$', "",  modified) # remove leading and trailing spaces
+    
+    return modified
 
 
 def punc_style_features(comment):
@@ -541,13 +568,15 @@ def normalize_comment(raw_comment):
     pattern = re.compile(r"[ ]{1,}\n{1,}[ ]{1,}")
     processed_comment = re.sub(pattern, "\n", processed_comment)
     #--------------
+    processed_comment = processed_comment[:-1]    
+    processed_comment = remove_nontextual(processed_comment)
 
     features.update({"modified_tokens_count": count_modified_tokens, "lengthening_counts": lengthening,
                      "edit_distance": edit_distance, "spaced_words_count": fixed_spacing["spaced_words_count"],
                      "ellipsis_count": ellipsis_count, "mdash_count": processed_comment.count("--")})
     features.update(punc_style)
 
-    return {"normalized_comment": processed_comment[:-1],
+    return {"normalized_comment": processed_comment,
             "features": features}
 
 

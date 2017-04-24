@@ -69,12 +69,12 @@ def accuracy():
     acc = nltk.classify.accuracy(classifier, testing_set)
     print("Naive Bayes Algo accuracay: ", acc * 100)
     return acc
-"""
-n = 25
-acc = 0
-for i in range(n):
-    acc += accuracy()
 
-print "accuracy", acc/n
-"""
+def avg_accuracy(n=25):
+    acc = 0
+    for i in range(n):
+        acc += accuracy()
+
+    print "accuracy", acc/n
+
     
