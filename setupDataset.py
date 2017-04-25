@@ -172,7 +172,7 @@ def compute_wiki_dataset(good, bad):
     return dataset
     
 
-def get_wiki_dataset(filename = FILEPATH):
+def get_wiki_dataset(filename = FILEPATH, start=0, end=8):
     """
     # load or compute and save dataset
     :return:
@@ -180,11 +180,11 @@ def get_wiki_dataset(filename = FILEPATH):
 
     # TODO: als funktion auslagern in Utils
     if not os.path.exists(filename):
-        n = 5
+        n = 250
                 
         good, bad = get_wiki_comments()
         print "Starting to compute WIKI dataset at  ", time.ctime()
-        for i in range(2):
+        for i in range(start,end):
             fn = "wiki_" + str(i) + ".pickle"
             dataset = compute_wiki_dataset(good[i*n:i*n+n], bad[i*n:i*n+n])
             save(dataset, fn)
