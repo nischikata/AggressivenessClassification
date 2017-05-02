@@ -54,14 +54,17 @@ def get_SVM_model():
     pass
 
 
-def test_model():
-    dataset = get_dataset("dataset.pickle") #TODO:  change DATASETNAME AGAIN
-    model = LogisticRegression()
-    X = dataset["data"]
+def test_model(filename="dataset.pickle"):
+    dataset = get_dataset(filename) #TODO:  change DATASETNAME AGAIN
+    return test_logReg(dataset["data"], dataset["target"])
 
-    y = dataset["target"]
+
+
+def test_logReg(X, y):
+    
     X_train, X_test, y_train, y_test = train_test_split(X, y) #, test_size=0.5, random_state=4)
-
+    
+    model = LogisticRegression()
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
@@ -71,15 +74,15 @@ def test_model():
     TN = confusion[0,0]
     FP = confusion[0,1]
     FN = confusion[1,0]
-    print "\nConfusion matrix"
-    print(confusion)
+    #print "\nConfusion matrix"
+    #print(confusion)
 
     accuracy = metrics.accuracy_score(y_test, y_pred)
     recall = metrics.recall_score(y_test,y_pred)
     #how precise the classifier is when prediciton a positive instance
     precision = metrics.precision_score(y_test, y_pred)
 
-    return {"accuracy": accuracy, "precision": precision, "recall": recall}
+    return {"accuracy": accuracy, "precision": precision, "recall": recall, "confusion": confusion}
 
 
 def get_prediction(comment, aggressive=False): # TODO: model type as param
@@ -104,22 +107,24 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
     print "------------------------------------------------------------------------------------------\n\n"
 
 
-def compute_avg(n):
+def compute_avg(X, y, n = 50):
     acc = 0
     prec = 0
     rec = 0
+    conf = np.zeros((2,2))
 
     for i in range(n):
-        r = test_model()
+        r = test_logReg(X, y)
         acc += r["accuracy"]
         prec += r["precision"]
         rec += r["recall"]
+        conf = np.add(conf, r["confusion"])
 
     acc /= n
     prec /= n
     rec /= n
 
-    print "   recall", rec, "  precision: ", prec, "   accuracy: ", acc
+    print "   recall", rec, "  precision: ", prec, "   accuracy: ", acc, "f-score: ", 2*prec*rec/(prec+rec)
+    print conf
 
 
-compute_avg(25)

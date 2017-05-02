@@ -194,3 +194,35 @@ def get_wiki_dataset(filename = FILEPATH, start=0, end=8):
         dataset = load(filename)
 
     return dataset
+    
+
+def combine_wikiSets():   
+    """
+    combines the 10 single wiki datasets into one big wiki dataset
+    """
+    dataset = load("wiki_0.pickle")
+
+    data = dataset["data"]
+    target = dataset["target"]
+
+    for i in range(1, 10):
+        fn = "wiki_" + str(i) + ".pickle"
+        temp = load(fn)
+
+        data = np.concatenate([data, temp["data"]])
+        target = np.concatenate([target, temp["target"]])
+    
+    new_dataset = {"data": data, "target": target}
+    save(new_dataset, "wiki_dataset.pickle")
+    
+    return new_dataset
+
+
+def combine_datasets(set1, set2):
+    d1 = load(set1)
+    d2 = load(set2)
+    
+    data = np.concatenate([d1["data"], d2["data"]])
+    target = np.concatenate([d1["target"], d2["target"]])
+    
+    return {"data": data, "target": target}
