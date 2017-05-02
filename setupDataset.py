@@ -218,10 +218,10 @@ def combine_wikiSets():
     return new_dataset
 
 
-def combine_datasets(set1, set2):
-    d1 = load(set1)
-    d2 = load(set2)
-    
+def combine_datasets(d1, d2):
+    """
+    combines two given datasets into a single dataset
+    """    
     data = np.concatenate([d1["data"], d2["data"]])
     target = np.concatenate([d1["target"], d2["target"]])
     

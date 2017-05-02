@@ -25,14 +25,14 @@ def concatSets(good, bad):
     into a single dataset (target included)
     """
         # create target X for good/bad
-        gy = np.zeros(len(good))
-        by = np.ones(len(bad))
-        
-        # now combine the good & bad chunk
-        data = np.concatenate([good, bad])
-        target = np.concatenate([gy, by])
-        
-        return { "data": data, "target": target}
+    gy = np.zeros(len(good))
+    by = np.ones(len(bad))
+    
+    # now combine the good & bad chunk
+    data = np.concatenate([good, bad])
+    target = np.concatenate([gy, by])
+    
+    return { "data": data, "target": target}
     
 
 def getTestSets(good, bad, k=5):
