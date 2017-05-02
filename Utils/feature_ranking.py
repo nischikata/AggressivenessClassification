@@ -28,8 +28,11 @@ def compute_scores(dataset):
     chi_scores, _ = chi2(X, y)          # chi squared (chi)
     
     scores = []
+    print len(f_test_scores)
     
-    for i in range(len(fnames)):
+    n = 68 # number of available features
+    
+    for i in range(n):
         
         indices_good = np.where(y == 1)[0]
         indices_bad = np.where(y == 0)[0]
@@ -66,7 +69,7 @@ def save_scores(dataset, out="scores.csv"):
     return __save_scores(compute_scores(dataset, out))
     
     
-def getTopFeatures(scores):
+def computeTopFeatures(scores):
     ranks = np.zeros(shape=(len(scores), len(scores[0])+1))
     ranks[:,0] = scores[:,0]
 
@@ -107,3 +110,8 @@ def __save_topFeatures(ranks, out):
     df.to_csv(out, sep='\t')
     print df
     return df
+    
+
+def getTopFeatures(dataset):
+    scores = compute_scores(dataset)
+    return computeTopFeatures(scores)
