@@ -5,6 +5,7 @@ import pandas as pd
 from scipy import stats
 from setupDataset import get_dataset
 from feature_vector import get_feature_names
+import os.path
 
 
 def compute_scores(dataset):
@@ -28,9 +29,8 @@ def compute_scores(dataset):
     chi_scores, _ = chi2(X, y)          # chi squared (chi)
     
     scores = []
-    print len(f_test_scores)
     
-    n = 68 # number of available features
+    n = len(f_test_scores) # number of available features
     
     for i in range(n):
         
@@ -57,7 +57,20 @@ def __save_scores(scores, out):
     df.to_csv(out, sep='\t')
     
     return df
+
+
     
+def save_rankSelections(ranks, out='rank_selections.csv'):
+    col_label = ["f", "ranksum", "chi", "mi", "combined"]
+    df = pd.DataFrame(ranks, columns=col_label)
+    df.to_csv(out, sep='\t')
+    return df
+    
+def load_rankSelections(filename='rank_selections.cvs'):
+    df = pd.read_csv(filename, sep='\t')
+    ranks = df.values
+    return ranks[:,1:].astype(int)
+
 
 def save_scores(dataset, out="scores.csv"):
     """
@@ -93,25 +106,74 @@ def computeTopFeatures(scores):
     ranks[:,-1]  = temp_ranks
     
     # USAGE
-    # best30_features_fscore = ranks[:,1][:30]
-    # best30_features_ranksum = ranks[:,2][:30]
-    # best30_features_chi = ranks[:,3][:30]
-    # best30_features_mi = ranks[:,4][:30]
+    # best30_features_fscore = ranks[:,0][:30]
+    # best30_features_ranksum = ranks[:,1][:30]
+    # best30_features_chi = ranks[:,2][:30]
+    # best30_features_mi = ranks[:,3][:30]
     # best30_features_allscores = ranks[:,-1][:30]
-    return ranks 
+    return ranks[:,1:].astype(int)
    
 
 def __save_topFeatures(ranks, out):
-
-    data = ranks[:,1:].astype(int)
     col_label = ["f", "ranksum", "chi", "mi", "all_combined"]
 
-    df = pd.DataFrame(data, columns=col_label)
+    df = pd.DataFrame(ranks, columns=col_label)
     df.to_csv(out, sep='\t')
     print df
     return df
     
 
-def getTopFeatures(dataset):
-    scores = compute_scores(dataset)
-    return computeTopFeatures(scores)
+def getTopFeatures(dataset, filename='rank_selections.cvs'):
+    
+    if not os.path.exists(filename):  
+        scores = compute_scores(dataset)
+        
+        rankSelections = computeTopFeatures(scores)
+        save_rankSelections(rankSelections, filename)
+        return rankSelections
+    else:
+        return load_rankSelections(filename)
+        
+        
+#----- Recursive Feature Elimination (RFE)
+def getRFE_ranking(dataset, out):
+    
+    if not os.path.exists(out):
+        X = dataset["data"]
+        y = dataset["target"]
+    
+        n = len(get_feature_names())+1
+    
+        first = getRFE_selection(X, y, 1)
+        RFE_ranks = [first[0]]
+   
+        for i in range(2, n):
+            sel = getRFE_selection(X,y,i)
+            diff = list(set(RFE_ranks).symmetric_difference(sel))
+        
+            for d in diff:
+                if d not in RFE_ranks:  # apparently the ranking is not always identical, prevents an index from being added twice     
+                    RFE_ranks.append(d)
+        
+
+        RFE_ranks = np.array(RFE_ranks)
+        save_RFE_ranks(RFE_ranks, out)
+    
+    
+    return load_rankSelections(out)
+
+
+def save_RFE_ranks(ranks, out):
+    col_label = ["RFE"]
+    df = pd.DataFrame(ranks, columns=col_label)
+    df.to_csv(out, sep='\t')
+    # Note: use load_rankSelections to load
+    # combine np.concatenate((ranks, RFE_ranks), axis=1)
+    
+
+def getRFE_selection(X, y, n):
+    estimator = LogisticRegression()
+    selector = RFE(estimator, n, step=1)
+    selector = selector.fit(X, y)
+    selection = selector.get_support(indices=True)
+    return selection.tolist()

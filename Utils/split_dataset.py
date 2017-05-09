@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.utils import shuffle
 from setupDataset import get_dataset
 
 def separateByCategory(dataset):
@@ -32,6 +33,10 @@ def concatSets(good, bad):
     data = np.concatenate([good, bad])
     target = np.concatenate([gy, by])
     
+    # shuffling must use same random state!
+    shuffle(data, random_state=4)
+    shuffle(target, random_state=4)
+    
     return { "data": data, "target": target}
     
 
@@ -43,9 +48,9 @@ def getTestSets(good, bad, k=5):
     
     returns a list of k datasets (each  { "data": data, "target": target})
     """
-    # shuffle the rows first
-    np.random.shuffle(good)
-    np.random.shuffle(bad)
+    # shuffle the rows first (always shuffle the same for reproducible results)
+    shuffle(good, random_state=3)
+    shuffle(bad, random_state=7)
     
     #split the dataset into k equal-sized chunks 
     g = np.array_split(good, k)
@@ -59,28 +64,28 @@ def getTestSets(good, bad, k=5):
     return datasets
 
 
-def getFinalDatasetChunk(good, bad):
+def get_testSet_validationSet(good, bad):
     """
     seperates the dataset into 3/4 for initial testing (used for grid tests)
     and 1/4 for the final test
     """
     frac = 4
     # shuffle the rows first
-    np.random.shuffle(good)
-    np.random.shuffle(bad)
+    shuffle(good, random_state=0)
+    shuffle(bad, random_state=1)
     
-    finalSet = concatSets(good[:len(good)//frac], bad[:len(bad)//frac]) # // ... integer division
+    validatationSet = concatSets(good[:len(good)//frac], bad[:len(bad)//frac]) # // ... integer division
    
     newgood = good[len(good)//frac:] # 3/4 of good
     newbad = bad[len(bad)//frac:] # 3/4 of bad
     
-    return finalSet, newgood, newbad
+    return newgood, newbad, validationSet
  
     
 # Usage:
 """   
 dataset = get_dataset("dataset.pickle")
 good, bad = separateByCategory(dataset)
-final, good, bad = getFinalDatasetChunk(good, bad)
+good, bad, validate = get_testSet_validationSet(good, bad)
 sets = getTestSets(good, bad)
 """ 
