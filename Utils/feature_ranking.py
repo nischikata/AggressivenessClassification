@@ -1,11 +1,13 @@
 from __future__ import division
-from sklearn.feature_selection import chi2, f_classif, mutual_info_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_selection import RFE, chi2, f_classif, mutual_info_classif
 import numpy as np
 import pandas as pd
 from scipy import stats
 from setupDataset import get_dataset
 from feature_vector import get_feature_names
 import os.path
+
 
 
 def compute_scores(dataset):
@@ -46,8 +48,10 @@ def compute_scores(dataset):
     scores[x]: test results for feature x
     scores[:, y]: test results for test y
     
-    """        
-    return np.array(scores)
+    """
+    scores =  np.array(scores)
+    scores[np.isnan(scores)] = 0    # replace 'nan' values (e.g. appears for  m-dash feature) with 0 
+    return scores
     
 def __save_scores(scores, out):
     
@@ -136,7 +140,7 @@ def getTopFeatures(dataset, filename='rank_selections.cvs'):
         
         
 #----- Recursive Feature Elimination (RFE)
-def getRFE_ranking(dataset, out):
+def getRFE_ranking(dataset, out='SELECTIONS_RFE.csv'):
     
     if not os.path.exists(out):
         X = dataset["data"]

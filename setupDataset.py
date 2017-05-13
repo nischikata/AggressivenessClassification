@@ -205,7 +205,7 @@ def combine_wikiSets():
     data = dataset["data"]
     target = dataset["target"]
 
-    for i in range(1, 10):
+    for i in range(1, 14):
         fn = "wiki_" + str(i) + ".pickle"
         temp = load(fn)
 
@@ -213,7 +213,7 @@ def combine_wikiSets():
         target = np.concatenate([target, temp["target"]])
     
     new_dataset = {"data": data, "target": target}
-    save(new_dataset, "wiki_dataset.pickle")
+    save(new_dataset, "wiki_dataset_new.pickle")
     
     return new_dataset
 

@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.utils import shuffle
-from setupDataset import get_dataset
+from setupDataset import get_dataset, save
 
 def separateByCategory(dataset):
     """
@@ -20,7 +20,7 @@ def separateByCategory(dataset):
     return good, bad
 
 
-def concatSets(good, bad):
+def concatSets(good, bad, random_state=4):
     """
     combines two given arrays (first: non aggressive data, second: aggressive data)
     into a single dataset (target included)
@@ -64,7 +64,7 @@ def getTestSets(good, bad, k=5):
     return datasets
 
 
-def get_testSet_validationSet(good, bad):
+def get_devSet_validationSet(good, bad):
     """
     seperates the dataset into 3/4 for initial testing (used for grid tests)
     and 1/4 for the final test
@@ -74,13 +74,22 @@ def get_testSet_validationSet(good, bad):
     shuffle(good, random_state=0)
     shuffle(bad, random_state=1)
     
-    validatationSet = concatSets(good[:len(good)//frac], bad[:len(bad)//frac]) # // ... integer division
+    validatationSet = concatSets(good[:len(good)//frac], bad[:len(bad)//frac], 3) # // ... integer division
+    devSet = concatSets(good[len(good)//frac:], bad[len(bad)//frac:], 7)
    
-    newgood = good[len(good)//frac:] # 3/4 of good
-    newbad = bad[len(bad)//frac:] # 3/4 of bad
+    #newgood = good[len(good)//frac:] # 3/4 of good
+    #newbad = bad[len(bad)//frac:] # 3/4 of bad
     
-    return newgood, newbad, validationSet
+    return devSet, validatationSet
  
+  
+def save_devSet_valSet(inFile, devFile="DEV_DATASET.pickle", valFile="VAL_DATASET.pickle"):
+    dataset = get_dataset(inFile)
+    good, bad = separateByCategory(dataset)
+    devSet, valSet = get_devSet_validationSet(good, bad)
+    print "devset ", len(devSet["target"]), "  valset: ", len(valSet["target"])
+    save(devSet, devFile)
+    save(valSet, valFile)
     
 # Usage:
 """   

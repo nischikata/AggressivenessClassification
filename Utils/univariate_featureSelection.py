@@ -62,7 +62,7 @@ def get_metrics(X_train, y_train, X_test, y_test):
     return metrics
 
 def get_metrics2ss(X_train, y_train, X_test, y_test):
-        model = LogisticRegression()
+        model = LogisticRegression()    #C=19306.977288832535)
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         return compute_metrics(y_test, y_pred)
@@ -75,13 +75,13 @@ def metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n):
     
     
     for rank in ranks.T:  # iterate over transposed array (over the columns)
-        #model = LogisticRegression()
+        
         X_train_selection = get_selectedFeatures(X_train, rank[:n]) #apply feature selection according to current ranking
         
-        #model.fit(X_train_selection, y_train)
+        
         
         X_test_selection = get_selectedFeatures(X_test, rank[:n]) #apply feature selection
-        #y_pred = model.predict(X_test_selection)
+
     
         metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test)
         metrics.append(metrics_temp)
