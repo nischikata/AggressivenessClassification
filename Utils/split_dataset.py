@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.utils import shuffle
-from setupDataset import get_dataset, save
+from Utils.setupDataset import get_dataset, save
 
 def separateByCategory(dataset):
     """

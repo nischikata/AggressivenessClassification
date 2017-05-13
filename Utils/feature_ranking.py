@@ -4,8 +4,8 @@ from sklearn.feature_selection import RFE, chi2, f_classif, mutual_info_classif
 import numpy as np
 import pandas as pd
 from scipy import stats
-from setupDataset import get_dataset
-from feature_vector import get_feature_names
+from Utils.setupDataset import get_dataset
+from Utils.feature_vector import get_feature_names
 import os.path
 
 

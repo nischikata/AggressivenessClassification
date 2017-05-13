@@ -1,4 +1,4 @@
-from model import get_prediction
+from Utils.model import get_prediction
 
 
 get_prediction("Every country is like a particular type of person. America is like a belligerent, adolescent boy; "

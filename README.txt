@@ -20,11 +20,11 @@ SETTING UP THE PROJECT
 1.4 Test code
     $ python runClassifier.py
     # to test predictions in the REPL use 
-    # >>> from model import get_prediction
+    # >>> from Utils.model import get_prediction
     # >>> get_prediction(u"Hello world!", False)
     #
     # to get accuracy, precision and recall of the dataset using randomized train/test/split:
-    # >>> from model import test_model
+    # >>> from Utils.model import test_model
     # >>> test_model()
     
 1.5 Deactivate virtual environment

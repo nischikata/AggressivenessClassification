@@ -2,12 +2,12 @@ from __future__ import division
 import numpy as np
 import pickle
 import os.path
-from setupDataset import get_dataset
+from Utils.setupDataset import get_dataset
 from sklearn.linear_model import LogisticRegression
 from sklearn.cross_validation import train_test_split
 from sklearn import metrics
-from comment import Comment
-from feature_vector import get_feature_vector
+from Utils.comment import Comment
+from Utils.feature_vector import get_feature_vector
 from Utils.tiny_helpers import get_text_label
 
 

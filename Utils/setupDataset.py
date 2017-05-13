@@ -1,5 +1,5 @@
-from feature_vector import get_feature_vector
-from comment import Comment
+from Utils.feature_vector import get_feature_vector
+from Utils.comment import Comment
 import numpy as np
 from nltk.corpus import CategorizedPlaintextCorpusReader
 from nltk import TreebankWordTokenizer
@@ -10,8 +10,8 @@ import pandas as pd
 import re
 pd.options.mode.chained_assignment = None
 
-FILEPATH = "dataset.pickle"
-FILEPATH_WIKI = "wiki_dataset_good.pickle"
+FILEPATH = "Datasets/dataset.pickle"
+FILEPATH_WIKI = "Datasets/wiki_dataset.pickle"
 MIN_CHARS_COMMENT = 5
 
 start_index = 0

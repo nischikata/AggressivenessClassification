@@ -30,16 +30,16 @@ def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxT
 
 """
     # USAGE
-from setupDataset import get_dataset, save, load
+from Utils.setupDataset import get_dataset, save, load
 
-m_devSet = get_dataset("M_DEV_dataset.pickle")
-w_devSet = get_dataset("W_DEV_dataset.pickle")
+m_devSet = get_dataset("Datasets/M_DEV_dataset.pickle")
+w_devSet = get_dataset("Datasets/W_DEV_dataset.pickle")
 
-get_LassoSelections(m_devSet, out='M_SELECTIONS_lasso.pickle')
-get_LassoSelections(w_devSet, out='W_SELECTIONS_lasso.pickle')
+get_LassoSelections(m_devSet, out='Datasets/M_SELECTIONS_lasso.pickle')
+get_LassoSelections(w_devSet, out='Datasets/W_SELECTIONS_lasso.pickle')
 
-m_lasso_selections = load('M_SELECTIONS_lasso.pickle')
-w_lasso_selections = load('W_SELECTIONS_lasso.pickle')
+m_lasso_selections = load('Datasets/M_SELECTIONS_lasso.pickle')
+w_lasso_selections = load('Datasets/W_SELECTIONS_lasso.pickle')
 
 print m_lasso_selections, "\n\n"
 print w_lasso_selections

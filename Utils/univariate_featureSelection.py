@@ -1,4 +1,4 @@
-from setupDataset import get_dataset, combine_datasets
+from Utils.setupDataset import get_dataset, combine_datasets
 from Utils.split_dataset import separateByCategory, get_testSet_validationSet, getTestSets
 from Utils.feature_ranking import getTopFeatures, getRFE_ranking
 import numpy as np
