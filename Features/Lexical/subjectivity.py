@@ -4,7 +4,7 @@ from Utils.text_mods import port
 import random
 
 
-FILEPATH = "subjectivity_dict.pickle"
+FILEPATH = "word_lists/subjectivity_dict.pickle"
 # strengths of subjectivity:
 STRONGSUBJ = 1.0
 WEAKSUBJ = 0.5

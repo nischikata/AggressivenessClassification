@@ -2,7 +2,7 @@
 import pickle
 import os.path
 
-FILEPATH = "politeness_dict.pickle"
+FILEPATH = "word_lists/politeness_dict.pickle"
 polite_terms = set()   # set() for superfast access for unique values (much faster than a list)
 
 def save_list(): # TODO: funktion auslagern in Utils fuer subjectivity dict, blacklist und politeness

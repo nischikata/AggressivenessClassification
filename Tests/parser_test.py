@@ -31,7 +31,7 @@ for i in mylist:
     print mylist
 
 
-print "UND JETZT MIT TAGGED SENT"
+
 print "Starting to parse:  ", time.ctime()
 
 # TODP: als input POS-tagged sentences rein schieben (performance!) und schaun wie ich zu diesen triples komme

@@ -1,7 +1,7 @@
 import pickle
 import os.path
 
-FILEPATH = "blacklist_dict.pickle"
+FILEPATH = "word_lists/blacklist_dict.pickle"
 blacklist = set()   # set() for superfast access for unique values (much faster than a list)
 
 def save_blacklist():
