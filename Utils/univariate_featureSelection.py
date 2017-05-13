@@ -61,11 +61,6 @@ def get_metrics(X_train, y_train, X_test, y_test):
     metrics = np.array([ f1, precision, recall, accuracy, TN, FP, FN, TP])
     return metrics
 
-def get_metrics2ss(X_train, y_train, X_test, y_test):
-        model = LogisticRegression()    #C=19306.977288832535)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        return compute_metrics(y_test, y_pred)
 
 def metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n):
     # 1. get feature ranks in an array
