@@ -1,0 +1,26 @@
+
+
+F-Test:
+wiki: https://en.wikipedia.org/wiki/F-test
+scikit: http://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html
+
+" well, like I said, F is the test statistic and is equal to:
+F=variance of the group means / mean of the within group variances
+the p-value on the other hand, is the probability of obtaining a result at least as extreme as the one that was actually observed, given that the null hypothesis is true.
+p value is a probability, F is a value of a test...2 different things. "
+http://www.talkstats.com/showthread.php/7481-What-F-value-stands-for-in-ANOVA-analysis
+
+
+" Another general statement: scores are better if greater, p-values are better if smaller (and losses are better if smaller) "
+http://stackoverflow.com/questions/23677734/whats-the-meaning-of-p-values-which-produced-by-feature-selection-i-e-chi2-me
+
+
+mit Grafiken und Erklärungen (Blogpost):
+http://blog.minitab.com/blog/adventures-in-statistics-2/understanding-analysis-of-variance-anova-and-the-f-test
+
+
+
+CHI-SQUARED:
+https://www.univie.ac.at/ksa/elearning/cp/quantitative/quantitative-94.html
+
+
