@@ -1,6 +1,7 @@
 from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LassoCV
 import numpy as np
+from Utils.setupDataset import get_dataset, save, load
 
 
 def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxThresh=0.25, minThresh=0.000005):

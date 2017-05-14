@@ -20,7 +20,7 @@ def separateByCategory(dataset):
     return good, bad
 
 
-def concatSets(good, bad, random_state=4):
+def concatSets(good, bad, r=4):
     """
     combines two given arrays (first: non aggressive data, second: aggressive data)
     into a single dataset (target included)
@@ -33,9 +33,18 @@ def concatSets(good, bad, random_state=4):
     data = np.concatenate([good, bad])
     target = np.concatenate([gy, by])
     
-    # shuffling must use same random state!
-    shuffle(data, random_state=4)
-    shuffle(target, random_state=4)
+    # seach round of huffling data and target must use same random state!
+    data = shuffle(data, random_state=r)
+    target = shuffle(target, random_state=r)
+    
+    data = shuffle(data, random_state=11)
+    target = shuffle(target, random_state=11)
+    
+    data = shuffle(data, random_state=0)
+    target = shuffle(target, random_state=0)
+    
+    data = shuffle(data, random_state=r+3)
+    target = shuffle(target, random_state=r+3)
     
     return { "data": data, "target": target}
     
@@ -49,8 +58,8 @@ def getTestSets(good, bad, k=5):
     returns a list of k datasets (each  { "data": data, "target": target})
     """
     # shuffle the rows first (always shuffle the same for reproducible results)
-    shuffle(good, random_state=3)
-    shuffle(bad, random_state=7)
+    good = shuffle(good, random_state=3)
+    bad = shuffle(bad, random_state=7)
     
     #split the dataset into k equal-sized chunks 
     g = np.array_split(good, k)
@@ -59,7 +68,7 @@ def getTestSets(good, bad, k=5):
     datasets = []
     
     for i in range(k):     
-        datasets.append(concatSets(g[i], b[i]))
+        datasets.append(concatSets(g[i], b[i]), 2)
     
     return datasets
 
@@ -71,8 +80,8 @@ def get_devSet_validationSet(good, bad):
     """
     frac = 4
     # shuffle the rows first
-    shuffle(good, random_state=0)
-    shuffle(bad, random_state=1)
+    good = shuffle(good, random_state=0)
+    bad = shuffle(bad, random_state=1)
     
     validatationSet = concatSets(good[:len(good)//frac], bad[:len(bad)//frac], 3) # // ... integer division
     devSet = concatSets(good[len(good)//frac:], bad[len(bad)//frac:], 7)
@@ -90,6 +99,7 @@ def save_devSet_valSet(inFile, devFile="DEV_DATASET.pickle", valFile="VAL_DATASE
     print "devset ", len(devSet["target"]), "  valset: ", len(valSet["target"])
     save(devSet, devFile)
     save(valSet, valFile)
+    return devSet, valSet
     
 # Usage:
 """   

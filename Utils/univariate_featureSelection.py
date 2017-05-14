@@ -1,13 +1,11 @@
 from Utils.setupDataset import get_dataset, combine_datasets
-from Utils.split_dataset import separateByCategory, get_testSet_validationSet, getTestSets
 from Utils.feature_ranking import getTopFeatures, getRFE_ranking
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import RFE
 from sklearn import metrics as skmetrics
 from Utils.selection_metrics import SelectionMetrics
-
+# from sklearn.model_selection import train_test_split
 
 
 """
@@ -72,12 +70,8 @@ def metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n):
     for rank in ranks.T:  # iterate over transposed array (over the columns)
         
         X_train_selection = get_selectedFeatures(X_train, rank[:n]) #apply feature selection according to current ranking
-        
-        
-        
         X_test_selection = get_selectedFeatures(X_test, rank[:n]) #apply feature selection
 
-    
         metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test)
         metrics.append(metrics_temp)
   
@@ -104,10 +98,26 @@ def addRFE(dataset, n, ranks):
     
     return ranks.astype(int)
 
+def featureSelectionResults(trainSet, validationSet, rankfile='Datasets/rank_selections.cvs', RFE_rankfile='Datasets/RFE_ranks.csv', n=25):
+    # 1. get the feature rankings
+    # 1.1 univariate ranks from file
+    ranks = getTopFeatures(trainSet, rankfile)
     
+    # 1.2 compute RFE ranks
+    RFE_ranks = getRFE_ranking(trainSet, RFE_rankfile)
+    ranks = np.concatenate((ranks, RFE_ranks), axis=1)
+    
+    X_train = trainSet['data']
+    y_train = trainSet['target']
+    X_test = validationSet['data']
+    y_test = validationSet['target']
+       
+    metrics = metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n)
+    
+    return SelectionMetrics(metrics, ranks, n)    
     
 
-def featureSelectionResults(dataset, rankfile='rank_selections.cvs', RFE_rankfile='RFE_ranks.csv', n=25, k=5):
+def featureSelectionResults_OLD(dataset, rankfile='rank_selections.cvs', RFE_rankfile='RFE_ranks.csv', n=25, k=5):
     # 1. get the feature rankings
     # 1.1 univariate ranks from file
     ranks = getTopFeatures(dataset, rankfile)
