@@ -41,8 +41,8 @@ def get_train_test_set(setlist, index):
     
     return X_train, y_train, X_test, y_test
 
-def get_metrics(X_train, y_train, X_test, y_test):
-    model = LogisticRegression()
+def get_metrics(X_train, y_train, X_test, y_test, penalty='l1'):
+    model = LogisticRegression(penalty=penalty, random_state=5) #penalty l1 yields significantly better results than l2
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)   
 
@@ -72,7 +72,7 @@ def metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n):
         X_train_selection = get_selectedFeatures(X_train, rank[:n]) #apply feature selection according to current ranking
         X_test_selection = get_selectedFeatures(X_test, rank[:n]) #apply feature selection
 
-        metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test)
+        metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test, penalty='l1')
         metrics.append(metrics_temp)
   
     # returns a list of metrics for each feature selection list for the given train test chunk
@@ -115,37 +115,18 @@ def featureSelectionResults(trainSet, validationSet, rankfile='Datasets/rank_sel
     metrics = metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n)
     
     return SelectionMetrics(metrics, ranks, n)    
-    
 
-def featureSelectionResults_OLD(dataset, rankfile='rank_selections.cvs', RFE_rankfile='RFE_ranks.csv', n=25, k=5):
-    # 1. get the feature rankings
-    # 1.1 univariate ranks from file
-    ranks = getTopFeatures(dataset, rankfile)
-    
-    # 1.2 compute RFE ranks
-    RFE_ranks = getRFE_ranking(dataset, RFE_rankfile)
-    ranks = np.concatenate((ranks, RFE_ranks), axis=1)
-    
-    # 2. separate into test validation sets    
-    good, bad = separateByCategory(dataset)
-    # good, bad, validate = get_testSet_validationSet(good, bad) brauch kein validation set momentan, oder?
-    sets = getTestSets(good, bad, k) #  returns a list of k datasets (each  { "data": data, "target": target})
-    r_len = len(ranks.T) + 1 # +1 for result without feature selection
-    metrics = [np.zeros(8) for i in range(r_len)]
-    
-    for index, set in enumerate(sets):
-        #actually each set is once the testing set, and then the others are used for training
-        # 1. the index set is the testing set, 
-        X_train, y_train, X_test, y_test = get_train_test_set(sets, index)
 
-        
-        metrics_temp = metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n)
-        metrics = [metrics[i]+metrics_temp[i] for i in range(r_len)] #sum up the metrics (compute avg later)
+def single_selection(trainSet, validationSet, selection, penalty='l1'):
+    X_train = trainSet['data']
+    y_train = trainSet['target']
+    X_test = validationSet['data']
+    y_test = validationSet['target']
+    
+    X_train_selection = get_selectedFeatures(X_train, selection) #apply feature selection according to current ranking
+    X_test_selection = get_selectedFeatures(X_test, selection) #apply feature selection
 
+    metrics = get_metrics(X_train_selection, y_train, X_test_selection, y_test, penalty)
     
-    # now divide all values of the metrics (except TN, TP, FN, FP) by the number of sets
-    set_len = len(sets)
-    avg_mask = np.array([set_len, set_len, set_len, set_len, 1, 1, 1, 1])
-    metrics = [m/avg_mask for m in metrics] #divide by the number of sets to get the average metrics
+    return metrics
     
-    return SelectionMetrics(metrics, ranks, n)
