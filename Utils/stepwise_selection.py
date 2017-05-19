@@ -1,4 +1,5 @@
 from Utils.univariate_featureSelection import featureSelectionResults, get_selectedFeatures
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -14,8 +15,12 @@ def get_stepwise_results(dev, val, rankfile, rfe_file):
     return dfs
 
 
+def plot_score(dfs, scorename='f1', start=0, end=69, title="my dataset"):
+    noselection, RFE, combined, ftest, ranksum, chi, mi = get_stepwise_scores(dfs, scorename='f1')
+    plot_stepwise_scores(noselection, RFE, combined, ftest, ranksum, chi, mi, start=start, end=end, title=title, scorename=scorename)
 
-def get_stepwise_scores(dfs, scorename='f1', start=1, end=69):
+
+def get_stepwise_scores(dfs, scorename='f1'):
     """
     this is mainly useful for plotting
     """
@@ -27,7 +32,7 @@ def get_stepwise_scores(dfs, scorename='f1', start=1, end=69):
     ranksum = []
     ftest = []
 
-    for df in dfs[start:end]:
+    for df in dfs:
         noselection.append(df[scorename]['no selection'])
         RFE.append(df[scorename]['RFE'])
         combined.append(df[scorename]['combined'])
@@ -86,6 +91,7 @@ def plot_stepwise_scores(noselection, RFE, combined, ftest, ranksum, chi, mi, st
 
 # from Utils.setupDataset import get_dataset
 # from Utils.lasso_selections import get_LassoSelectionResults
+#from Utils.stepwise_selection import plot_score, get_stepwise_results, get_logReg_featureSelectionResults
 
 #m_dev = get_dataset("Datasets/M_DEV_dataset.pickle")
 #w_dev = get_dataset("Datasets/W_DEV_dataset.pickle")
@@ -110,8 +116,8 @@ def plot_stepwise_scores(noselection, RFE, combined, ftest, ranksum, chi, mi, st
 # # compute the Ranking of the different Selections (Univariate, RFE, Lasso)
 #m_lasso_df = get_logReg_featureSelectionResults(m_dfs, m_lasso, out="Datasets/M_MODEL_LR_results.csv")
 
-#noselection, RFE, combined, ftest, ranksum, chi, mi = get_stepwise_scores(m_dfs, scorename='f1')
-#plot_stepwise_scores(noselection, RFE, combined, ftest, ranksum, chi, mi)
+
+#plot_score(m_dfs, scorename='f1', start=0, end=69, title="hello world")
 
 # To Load Selections Ranking File:
 # df_loaded = pd.read_csv("Datasets/M_MODEL_LR_results.csv", sep='\t', index_col=0)

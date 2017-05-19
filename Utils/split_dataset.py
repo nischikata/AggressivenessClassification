@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.utils import shuffle
 from Utils.setupDataset import get_dataset, save
+from sklearn import preprocessing
 
 def separateByCategory(dataset):
     """
@@ -100,7 +101,18 @@ def save_devSet_valSet(inFile, devFile="DEV_DATASET.pickle", valFile="VAL_DATASE
     save(devSet, devFile)
     save(valSet, valFile)
     return devSet, valSet
-    
+ 
+ 
+def scale_sets(dev, val):
+     scaler = preprocessing.StandardScaler().fit(dev["data"])
+     X = scaler.transform(dev["data"])
+     X_test = scaler.transform(val["data"])
+        
+     new_dev = {"data": X, "target": dev["target"]}
+     new_val = {"data": X_test, "target": val["target"]}
+     return new_dev, new_val
+     
+     
 # Usage:
 """   
 dataset = get_dataset("dataset.pickle")

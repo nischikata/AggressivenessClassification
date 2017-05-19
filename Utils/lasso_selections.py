@@ -2,13 +2,17 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LassoCV
 import numpy as np
 from Utils.setupDataset import get_dataset, save, load
-from univariate_featureSelection import get_metrics, get_selectedFeatures
+from Utils.univariate_featureSelection import get_metrics, get_selectedFeatures
 import pandas as pd
+from sklearn import preprocessing
 
 
-def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxThresh=0.25, minThresh=0.000005):
+def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxThresh=0.25, minThresh=0.000005, scale=True):
     X = dataset["data"]
     y = dataset["target"]
+    
+    if scale: # scale the dataset to speed up process and more+better feature selections
+        X = preprocessing.scale(X)
     
     thr_range =  np.arange(0.000005, 0.25, 0.005)
     no_selection = np.arange(0,68)
@@ -17,7 +21,7 @@ def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxT
     
     for thresh in thr_range:
         
-        clf = LassoCV(selection='random', random_state=1, cv=5)
+        clf = LassoCV(selection='random', random_state=1, cv=5, n_alphas=250)
         sfm = SelectFromModel(clf, threshold=thresh)
         sfm.fit(X,y)
         sel = sfm.get_support(indices=True)

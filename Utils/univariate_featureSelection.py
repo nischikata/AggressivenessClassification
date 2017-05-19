@@ -68,7 +68,6 @@ def metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n):
     
     
     for rank in ranks.T:  # iterate over transposed array (over the columns)
-        
         X_train_selection = get_selectedFeatures(X_train, rank[:n]) #apply feature selection according to current ranking
         X_test_selection = get_selectedFeatures(X_test, rank[:n]) #apply feature selection
 

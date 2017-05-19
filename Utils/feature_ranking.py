@@ -1,6 +1,7 @@
 from __future__ import division
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import RFE, chi2, f_classif, mutual_info_classif
+from sklearn import preprocessing
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -140,11 +141,14 @@ def getTopFeatures(dataset, filename='rank_selections.cvs'):
         
         
 #----- Recursive Feature Elimination (RFE)
-def getRFE_ranking(dataset, out='SELECTIONS_RFE.csv'):
+def getRFE_ranking(dataset, out='SELECTIONS_RFE.csv', scale=True):
     
     if not os.path.exists(out):
         X = dataset["data"]
         y = dataset["target"]
+        
+        if scale:
+            X = preprocessing.scale(X) # scale the dataset to speed up process and likely better feature ranking
     
         n = len(get_feature_names())+1
     
