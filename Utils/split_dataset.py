@@ -104,7 +104,7 @@ def save_devSet_valSet(inFile, devFile="DEV_DATASET.pickle", valFile="VAL_DATASE
  
  
 def scale_sets(dev, val):
-     scaler = preprocessing.StandardScaler().fit(dev["data"])
+     scaler = preprocessing.MinMaxScaler().fit(dev["data"])
      X = scaler.transform(dev["data"])
      X_test = scaler.transform(val["data"])
         

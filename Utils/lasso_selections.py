@@ -12,9 +12,9 @@ def get_LassoSelections(dataset, out='SELECTIONS_lasso.pickle', step=0.005, maxT
     y = dataset["target"]
     
     if scale: # scale the dataset to speed up process and more+better feature selections
-        X = preprocessing.scale(X)
+        X = preprocessing.minmax_scale(X)
     
-    thr_range =  np.arange(0.000005, 0.25, 0.005)
+    thr_range =  np.arange(minThresh, maxThresh, step)
     no_selection = np.arange(0,68)
     
     selections = [no_selection]

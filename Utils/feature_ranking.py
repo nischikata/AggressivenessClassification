@@ -148,7 +148,7 @@ def getRFE_ranking(dataset, out='SELECTIONS_RFE.csv', scale=True):
         y = dataset["target"]
         
         if scale:
-            X = preprocessing.scale(X) # scale the dataset to speed up process and likely better feature ranking
+            X = preprocessing.minmax_scale(X) # scale the dataset to speed up process and likely better feature ranking
     
         n = len(get_feature_names())+1
     
