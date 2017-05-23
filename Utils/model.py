@@ -4,11 +4,11 @@ import pickle
 import os.path
 from Utils.setupDataset import get_dataset
 from sklearn.linear_model import LogisticRegression
-from sklearn.cross_validation import train_test_split
 from sklearn import metrics
 from Utils.comment import Comment
 from Utils.feature_vector import get_feature_vector
 from Utils.tiny_helpers import get_text_label
+from Utils.univariate_featureSelection import get_selectedFeatures
 
 
 def save(model, filepath): # TODO: funktion auslagern in Utils
@@ -48,41 +48,6 @@ def get_logReg_model(path = "model_logRegr.pickle"):
     return model
 
 
-def get_SVM_model():
-    path = "model_SVM.pickle"
-    #TODO
-    pass
-
-
-def test_model(filename="dataset.pickle"):
-    dataset = get_dataset(filename) #TODO:  change DATASETNAME AGAIN
-    return test_logReg(dataset["data"], dataset["target"])
-
-
-
-def test_logReg(X, y):
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y) #, test_size=0.5, random_state=4)
-    
-    model = LogisticRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-
-    # wichtig, zuerst die tatsaechlichen werte, dann die predicted
-    confusion = metrics.confusion_matrix(y_test, y_pred)
-    TP = confusion[1,1]
-    TN = confusion[0,0]
-    FP = confusion[0,1]
-    FN = confusion[1,0]
-    #print "\nConfusion matrix"
-    #print(confusion)
-
-    accuracy = metrics.accuracy_score(y_test, y_pred)
-    recall = metrics.recall_score(y_test,y_pred)
-    #how precise the classifier is when prediciton a positive instance
-    precision = metrics.precision_score(y_test, y_pred)
-
-    return {"accuracy": accuracy, "precision": precision, "recall": recall, "confusion": confusion}
 
 
 def get_prediction(comment, aggressive=False): # TODO: model type as param
@@ -107,24 +72,52 @@ def get_prediction(comment, aggressive=False): # TODO: model type as param
     print "------------------------------------------------------------------------------------------\n\n"
 
 
-def compute_avg(X, y, n = 50):
-    acc = 0
-    prec = 0
-    rec = 0
-    conf = np.zeros((2,2))
 
-    for i in range(n):
-        r = test_logReg(X, y)
-        acc += r["accuracy"]
-        prec += r["precision"]
-        rec += r["recall"]
-        conf = np.add(conf, r["confusion"])
+def get_bestPrediction(comment, aggressive=False, FS=True, dataset='wiki', selection = []):
+    """
+    
+    """
 
-    acc /= n
-    prec /= n
-    rec /= n
+    if selection == []:
+        selection = range(0,68)
+        if FS:
+            if dataset == 'wiki':
+                selection = [60, 56, 40, 24, 51, 61, 7, 1, 62, 13, 36, 12, 32, 33, 4, 46, 20, 18, 6, 23, 19, 26, 43, 11, 0, 35, 59, 64, 10, 57, 37, 58, 31, 41, 14, 2, 54, 48, 22, 44, 50, 49, 53, 30, 34, 8, 27, 39, 29, 55, 67, 66, 28, 9, 5, 52, 15, 47, 65, 17, 3, 42, 16, 63, 25]
+                
+                # or with best 24 features (f-test):
+                # selection = [60, 4, 61, 24, 0, 62, 33, 7, 6, 32, 53, 23, 44, 49, 64, 54, 31, 35, 67, 59, 1, 26, 29, 66]
+                
+                # or with best 6 features (Lasso)
+                #selection = [7, 24, 60, 61, 62, 64] 	
+                
+            else:
+                selection = [1, 43, 10, 11, 40, 26, 59, 35, 56, 24, 60, 62, 0, 61, 18, 2, 12, 54, 63, 19, 42, 34, 46, 20, 23, 53, 58, 4, 49, 47, 52, 8, 3, 38, 45, 55, 9, 16, 32, 7, 66, 36, 33, 13, 17, 48, 50, 44]
+                # or with best 21 features
+                #selection = [1, 43, 10, 11, 40, 26, 59, 35, 56, 24, 60, 62, 0, 61, 18, 2, 12, 54, 63, 19, 42]
+        
+    label = 'a' if aggressive else 'na'
+    # X.reshape(1, -1)
+    # 1. compute feature vector for comment
+    c = Comment(comment, label)
+    observation = (get_feature_vector(c))[selection]
+    
+    # load the chosen dataset
+    if dataset == 'wiki':
+        dataset = get_dataset("Datasets/W_DEV_dataset.pickle")
+    else:
+        dataset = get_dataset("Datasets/M_DEV_dataset.pickle")
+        
+    model = LogisticRegression(penalty='l1', random_state=5)
+    X = get_selectedFeatures(dataset["data"], selection)
+    y = dataset["target"]
 
-    print "   recall", rec, "  precision: ", prec, "   accuracy: ", acc, "f-score: ", 2*prec*rec/(prec+rec)
-    print conf
+    model.fit(X, y)
+    pred = model.predict(observation.reshape(1,-1))
 
+    print "\n"
+    c.print_original_sents()
 
+    print " EXPECTED:  ", get_text_label(c.get_label()), "    PREDICTED:   ", get_text_label(pred)
+    print "------------------------------------------------------------------------------------------\n\n"    
+    
+    return get_text_label(pred)
