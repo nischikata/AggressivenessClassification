@@ -8,6 +8,10 @@ FEATURE_NAMES = ['as_is___exclamation_ratio', 'as_is___long_words_count', 'as_is
 def get_feature_names():
     return FEATURE_NAMES
 
+def print_features():
+    for i, f in enumerate(get_feature_names()):
+        print i, "...", f
+
 
 def get_feature_vector(comment):
     """
@@ -20,7 +24,6 @@ def get_feature_vector(comment):
 
     feature_list = []
     
-    #feature_names = []
 
     as_is = ['exclamation_ratio', 'long_words_count', 'wh_pronouns', 'ellipsis_count', 'period_ratio', 'questionmark_ratio', 'whitespace_ratio', 'highlighters_count',
              'paras_count', 'sent_count', 'word_count', 'ttr', 'max_wordlength', 'average_wordlength',

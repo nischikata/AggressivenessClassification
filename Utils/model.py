@@ -1,5 +1,6 @@
 from __future__ import division
 import numpy as np
+import pandas as pd
 import pickle
 import os.path
 from Utils.setupDataset import get_dataset
@@ -8,7 +9,7 @@ from sklearn import metrics
 from Utils.comment import Comment
 from Utils.feature_vector import get_feature_vector
 from Utils.tiny_helpers import get_text_label
-from Utils.univariate_featureSelection import get_selectedFeatures
+from Utils.univariate_featureSelection import get_selectedFeatures, single_selection
 
 
 def save(model, filepath): # TODO: funktion auslagern in Utils
@@ -94,6 +95,9 @@ def get_bestPrediction(comment, aggressive=False, FS=True, dataset='wiki', selec
                 selection = [1, 43, 10, 11, 40, 26, 59, 35, 56, 24, 60, 62, 0, 61, 18, 2, 12, 54, 63, 19, 42, 34, 46, 20, 23, 53, 58, 4, 49, 47, 52, 8, 3, 38, 45, 55, 9, 16, 32, 7, 66, 36, 33, 13, 17, 48, 50, 44]
                 # or with best 21 features
                 #selection = [1, 43, 10, 11, 40, 26, 59, 35, 56, 24, 60, 62, 0, 61, 18, 2, 12, 54, 63, 19, 42]
+                
+                # best 'manual selection by Tina' (83 % f1 score!!):
+                # selection = [1, 5, 7, 17, 24, 34, 40, 46, 59]
         
     label = 'a' if aggressive else 'na'
     # X.reshape(1, -1)
@@ -121,3 +125,25 @@ def get_bestPrediction(comment, aggressive=False, FS=True, dataset='wiki', selec
     print "------------------------------------------------------------------------------------------\n\n"    
     
     return get_text_label(pred)
+    
+    
+def DIY_selection(selection=[0,1,2,3]):
+    
+    selection = [sel for sel in selection if sel >= 0 and sel < 68]
+    
+    w_dev = get_dataset("Datasets/W_DEV_dataset.pickle")
+    w_val = get_dataset("Datasets/W_VAL_dataset.pickle")
+
+    m_dev = get_dataset("Datasets/M_DEV_dataset.pickle")
+    m_val = get_dataset("Datasets/M_VAL_dataset.pickle")
+    
+    w_r = single_selection(w_dev, w_val, selection)
+    m_r = single_selection(m_dev, m_val, selection)
+    col_label = ["f1", "precision", "recall", "accuracy", "TN", "FP", "FN", "TP"]
+    
+    df = pd.DataFrame([w_r, m_r], columns=col_label, index=['wiki', 'martin'])
+    df['TN'] = df['TN'].astype(int)
+    df['FP'] = df['FP'].astype(int)
+    df['FN'] = df['FN'].astype(int)
+    df['TP'] = df['TP'].astype(int)
+    return df

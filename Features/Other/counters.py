@@ -108,13 +108,13 @@ def get_punctuation_stats(raw_comment):
 
 def get_noise_count(raw_comment):
     """
-    Returns the number of words that contain at least one non-alphanumerical char within the word
+    Returns the number of words that contain at least one non-alpha char within the word
     
-    >>> get_inner_asterisk("F*ck!")
+    >>> get_noise_count"F*ck!")
     1
-    >>> get_inner_asterisk("*nice*!")
+    >>> get_noise_count("*nice*!")
     0
-    >>> get_inner_asterisk("S#**t!")
+    >>> get_noise_count("S#**t!")
     1
     
     """
