@@ -84,6 +84,8 @@ def plot_featureDistribution(dataset, f_index):
         numBins = max_val
         ax.hist(good[:,f_index].astype(int),numBins, color='lime', alpha=0.9, label='ok')
         ax.hist(bad[:,f_index],numBins,color='orangered', alpha=0.6, label='aggressive')
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True)) # force x labels to be integer
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True)) # force y labels to be integer
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
         plt.suptitle("\n" + fname + " [" + str(f_index) + "]", fontsize=24)
         plt.xlabel('feature value')
