@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.feature_selection import RFE
 from sklearn import metrics as skmetrics
 from Utils.selection_metrics import SelectionMetrics
+from sklearn import preprocessing
 # from sklearn.model_selection import train_test_split
 
 
@@ -42,7 +43,7 @@ def get_train_test_set(setlist, index):
     return X_train, y_train, X_test, y_test
 
 def get_metrics(X_train, y_train, X_test, y_test, penalty='l1'):
-    model = LogisticRegression(penalty=penalty, random_state=5) #penalty l1 yields significantly better results than l2
+    model = LogisticRegression(penalty=penalty, C=1.0, tol=1e-10, random_state=0) 
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)   
 
@@ -106,9 +107,10 @@ def featureSelectionResults(trainSet, validationSet, rankfile='Datasets/rank_sel
     RFE_ranks = getRFE_ranking(trainSet, RFE_rankfile)
     ranks = np.concatenate((ranks, RFE_ranks), axis=1)
     
+ 
     X_train = trainSet['data']
-    y_train = trainSet['target']
     X_test = validationSet['data']
+    y_train = trainSet['target']
     y_test = validationSet['target']
        
     metrics = metrics_feature_selection(ranks, X_train, y_train, X_test, y_test, n)
@@ -117,13 +119,18 @@ def featureSelectionResults(trainSet, validationSet, rankfile='Datasets/rank_sel
 
 
 def single_selection(trainSet, validationSet, selection, penalty='l1'):
-    X_train = trainSet['data']
+   
+    #DATA SCALING!
+    scaler = preprocessing.MinMaxScaler().fit(trainSet['data'])
+    X_train = scaler.transform(trainSet['data'])
+    X_test = scaler.transform(validationSet['data'])
+    
     y_train = trainSet['target']
-    X_test = validationSet['data']
     y_test = validationSet['target']
     
     X_train_selection = get_selectedFeatures(X_train, selection) #apply feature selection according to current ranking
     X_test_selection = get_selectedFeatures(X_test, selection) #apply feature selection
+
 
     metrics = get_metrics(X_train_selection, y_train, X_test_selection, y_test, penalty)
     

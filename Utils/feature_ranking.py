@@ -29,7 +29,7 @@ def compute_scores(dataset):
     
     f_test_scores, _ = f_classif(X, y)  # F-test (f)
     mi = mutual_info_classif(X, y)      # mutual information (mi)
-    chi_scores, _ = chi2(X, y)          # chi squared (chi)
+    #chi_scores, _ = chi2(X, y)          # chi squared (chi)
     
     scores = []
     
@@ -43,7 +43,8 @@ def compute_scores(dataset):
         bad  = X[:, i][indices_bad]
         ranksum, _ = stats.ranksums(good, bad) # wilcoxon test
         
-        scores.append([i, abs(f_test_scores[i]), abs(ranksum), abs(chi_scores[i]), abs(mi[i])]) 
+        #scores.append([i, abs(f_test_scores[i]), abs(ranksum), abs(chi_scores[i]), abs(mi[i])])
+        scores.append([i, abs(f_test_scores[i]), abs(ranksum), abs(mi[i])])
     
     """
     scores[x]: test results for feature x
@@ -57,7 +58,8 @@ def compute_scores(dataset):
 def __save_scores(scores, out):
     
     row_label = get_feature_names()
-    col_label = ["index", "f", "ranksum", "chi", "mi"]
+    #col_label = ["index", "f", "ranksum", "chi", "mi"]
+    col_label = ["index", "f", "ranksum", "mi"]
     df = pd.DataFrame(scores, index=row_label, columns=col_label)
     df.to_csv(out, sep='\t')
     
@@ -66,7 +68,8 @@ def __save_scores(scores, out):
 
     
 def save_rankSelections(ranks, out='rank_selections.csv'):
-    col_label = ["f", "ranksum", "chi", "mi", "combined"]
+    #col_label = ["f", "ranksum", "chi", "mi", "combined"]
+    col_label = ["f", "ranksum", "mi", "combined"]
     df = pd.DataFrame(ranks, columns=col_label)
     df.to_csv(out, sep='\t')
     return df
@@ -95,7 +98,7 @@ def computeTopFeatures(scores):
     rankrange = np.arange(1, len(scores)+1) # [1,2,3,....67,68]
     sums = np.zeros(len(scores)) # for the summation of ranks per score
     
-    for i in range(1,5):
+    for i in range(1,4):
         ranks = ranks[scores[:,i].argsort()[::-1]] #sort descending by column idx i (e.g. fscore)
 
         temp_ranks = ranks[:,0] # feature indices sorted by best first for current idx i
@@ -120,8 +123,8 @@ def computeTopFeatures(scores):
    
 
 def __save_topFeatures(ranks, out):
-    col_label = ["f", "ranksum", "chi", "mi", "all_combined"]
-
+    #col_label = ["f", "ranksum", "chi", "mi", "all_combined"]
+    col_label = ["f", "ranksum", "mi", "all_combined"]
     df = pd.DataFrame(ranks, columns=col_label)
     df.to_csv(out, sep='\t')
     print df

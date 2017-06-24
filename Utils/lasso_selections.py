@@ -47,20 +47,18 @@ def get_LassoSelectionResults(trainSet, validationSet, file='Datasets/SELECTIONS
     y_test = validationSet['target']
        
     metrics = metrics_lasso_selection(selections, X_train, y_train, X_test, y_test)
-    
-    
-    
+        
     return metrics #SelectionMetrics(metrics, ranks, n) 
 
 
 def metrics_lasso_selection(selections, X_train, y_train, X_test, y_test):
     # 1. get feature ranks in an array
     # loop over array of ranks (COLUMNS!)
-    metrics_noSelection = get_metrics(X_train, y_train, X_test, y_test, penalty='l2')
-    metrics = [metrics_noSelection]
-    source_labels = ['no selection (L2)']
-    selections_col = [selections[-1]]
-    ns = [len(selections[-1])]
+    #metrics_noSelection = get_metrics(X_train, y_train, X_test, y_test, penalty='l2')
+    metrics = []
+    source_labels = []
+    selections_col = []
+    ns = []
     
     
     for sel in selections[:-1]:  # exclude the noSelections
@@ -68,7 +66,7 @@ def metrics_lasso_selection(selections, X_train, y_train, X_test, y_test):
         X_train_selection = get_selectedFeatures(X_train, sel) #apply feature selection according to current ranking
         X_test_selection = get_selectedFeatures(X_test, sel) #apply feature selection
 
-        metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test, penalty='l2')
+        metrics_temp = get_metrics(X_train_selection, y_train, X_test_selection, y_test, penalty='l1')
         metrics.append(metrics_temp)
         
         source_labels.append("Lasso") # 
@@ -86,8 +84,7 @@ def metrics_lasso_selection(selections, X_train, y_train, X_test, y_test):
     df['FP'] = df['FP'].astype(int)
     df['FN'] = df['FN'].astype(int)
     df['TP'] = df['TP'].astype(int)
-
-    
+ 
 
     df_ranks = pd.DataFrame({'n': ns, 'selection': selections_col, 'source': source_labels})
 

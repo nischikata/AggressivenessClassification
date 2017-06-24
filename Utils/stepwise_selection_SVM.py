@@ -20,21 +20,31 @@ warnings.filterwarnings('ignore')
 # ____________ FEATURE SELECTION
 
 def featureSelectionResults_SVM(trainSet, validationSet, univariate, RFE, lasso, combination, rfb_kernel=True):
+
+    # 1. scale the sets first thing!
+    scaler = preprocessing.MinMaxScaler().fit(trainSet['data'])
+    X_train = scaler.transform(trainSet['data'])
+    y_train = trainSet['target']
+    X_test = scaler.transform(validationSet['data'])
+    y_test = validationSet['target']
+    
+    trainSet = {'data': X_train, 'target': y_train}
+    validationSet = {'data': X_test, 'target': y_test}
+    
+    
     # 1. get the feature rankings
     # 1.1 univariate ranks from file
     if not os.path.exists(combination):
+        # pass a copy 
         selections_df = combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel)
         # save results in cvs
         selections_df.to_csv(combination, sep='\t')
     
     selections_df = pd.read_csv(combination, sep='\t', index_col=0)
 
-    X_train = trainSet['data']
-    y_train = trainSet['target']
-    X_test = validationSet['data']
-    y_test = validationSet['target']
        
     selections_df = apply_feature_selection_SVM(selections_df, X_train, y_train, X_test, y_test, rfb_kernel)
+    selections_df = selections_df.sort_values('n', ascending=True)
     selections_df = selections_df.sort_values('f1', ascending=False)
     
     selections_df = selections_df.reset_index(drop=True)
@@ -63,15 +73,13 @@ def apply_feature_selection_SVM(selections_df, X_train, y_train, X_test, y_test,
     return selections_df
     
     
-def get_metrics_SVM(X_train, y_train, X_test, y_test, gamma=0.1, C=1.0):
+def get_metrics_SVM(X_train, y_train, X_test, y_test, gamma, C):
 
-    # Scale X:
-    scaler = preprocessing.MinMaxScaler().fit(X_train)
-    X_train = scaler.transform(X_train)
-    X_test = scaler.transform(X_test)
+    g = gamma
+    c = C
 
     # 
-    model = SVC(kernel='rbf', C=C, gamma=gamma)
+    model = SVC(kernel='rbf', C=c, gamma=g, tol=1e-10, random_state=0)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)   
     confusion = skmetrics.confusion_matrix(y_test, y_pred)
@@ -87,9 +95,7 @@ def get_metrics_SVM(X_train, y_train, X_test, y_test, gamma=0.1, C=1.0):
     return metrics
     
     
-def combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel=True):
-    # scale Trainset:
-    trainSet["data"] = preprocessing.minmax_scale(trainSet["data"])
+def combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel):
 
     col_labels = ["f1", "precision", "recall", "accuracy", "TN", "FP", "FN", "TP", "n", "selection", "source", "gamma", "C"]
 
@@ -107,7 +113,8 @@ def combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel=True):
         C = compute_linearSVM_params(trainSet, range(0,68))
         combination = [[0.0, 0.0, 0.0, 0.0, 0,0,0,0, 68, range(0,68), 'no selection', 0.0, C]]
 
-    source = ["f-test", "ranksum", "chi2", "mi", "combined", "RFE"]
+
+    source = ["f-test", "ranksum", "mi", "combined", "RFE"]
 
     
     for i, sel in enumerate(selections.T):
@@ -126,10 +133,10 @@ def combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel=True):
     for sel in lasso_selections[:-1]:  # exclude the noSelections
         if rfb_kernel:
             gamma, C = compute_SVM_params(trainSet, sel)
-            combination.append([0.0, 0.0, 0.0, 0.0, 0,0,0,0, len(sel), sel, "Lasso", gamma, C])
+            combination.append([0.0, 0.0, 0.0, 0.0, 0,0,0,0, len(sel), sel, 'Lasso', gamma, C])
         else: 
-            C = compute_linearSVM_params(trainSet, range(0,68))
-            combination.append([0.0, 0.0, 0.0, 0.0, 0,0,0,0, 68, range(0,68), 'Lasso', 0.0, C])
+            C = compute_linearSVM_params(trainSet, sel)
+            combination.append([0.0, 0.0, 0.0, 0.0, 0,0,0,0, len(sel), sel, 'Lasso', 0.0, C])
     print "done. saving to file... ", time.ctime()
     df = pd.DataFrame(combination, columns = col_labels)
     
@@ -139,7 +146,7 @@ def combine_selections(trainSet, univariate, RFE, lasso, rfb_kernel=True):
 
 
 def compute_SVM_params(trainSet, selection): 
-    gamma_range = np.logspace(-6,2,6)
+    gamma_range = np.logspace(-2,3,6)
     C_range = np.logspace(-2,3,6)
 
 
@@ -176,15 +183,18 @@ def compute_linearSVM_params(trainSet, selection):
     return C
     
     
-def get_metrics_linearSVM(X_train, y_train, X_test, y_test, C=1.0):
-
+def get_metrics_linearSVM(X_train, y_train, X_test, y_test, C):
     # Scale X:
-    scaler = preprocessing.MinMaxScaler().fit(X_train)
-    X_train = scaler.transform(X_train)
-    X_test = scaler.transform(X_test)
-
+    c_param = C
     # 
-    model = LinearSVC(C=C, loss='hinge')
+    
+    """ Random State & Tolerance https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/svm/classes.py#L89 :
+    The underlying C implementation uses a random number generator to
+        select features when fitting the model. It is thus not uncommon
+        to have slightly different results for the same input data. If
+        that happens, try with a smaller ``tol`` parameter.
+    """
+    model = LinearSVC(C=c_param, loss='hinge', tol=1e-10, random_state=0)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)   
     confusion = skmetrics.confusion_matrix(y_test, y_pred)

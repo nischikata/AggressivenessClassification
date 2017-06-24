@@ -19,7 +19,8 @@ class SelectionMetrics:
     def compute_df(self):
         np.set_printoptions(precision=3, suppress=True)
         
-        row_label = ["no selection", "f-test", "ranksum", "chi2", "mi", "combined", "RFE"]
+        #row_label = ["no selection", "f-test", "ranksum", "chi2", "mi", "combined", "RFE"]
+        row_label = ["no selection", "f-test", "ranksum", "mi", "combined", "RFE"]
         col_label = ["f1", "precision", "recall", "accuracy", "TN", "FP", "FN", "TP"]
 
         df = pd.DataFrame(self.metrics, index=row_label, columns=col_label)

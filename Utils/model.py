@@ -10,6 +10,7 @@ from Utils.comment import Comment
 from Utils.feature_vector import get_feature_vector
 from Utils.tiny_helpers import get_text_label
 from Utils.univariate_featureSelection import get_selectedFeatures, single_selection
+from sklearn import preprocessing
 
 
 def save(model, filepath): # TODO: funktion auslagern in Utils
@@ -100,31 +101,44 @@ def get_bestPrediction(comment, aggressive=False, FS=True, dataset='wiki', selec
                 # selection = [1, 5, 7, 17, 24, 34, 40, 46, 59]
         
     label = 'a' if aggressive else 'na'
-    # X.reshape(1, -1)
-    # 1. compute feature vector for comment
-    c = Comment(comment, label)
-    observation = (get_feature_vector(c))[selection]
+  
     
-    # load the chosen dataset
-    if dataset == 'wiki':
-        dataset = get_dataset("Datasets/W_DEV_dataset.pickle")
-    else:
-        dataset = get_dataset("Datasets/M_DEV_dataset.pickle")
+    c = Comment(comment, label)
+    observation = (get_feature_vector(c)) #[selection] # remove!
+    
+    # get both datasets
+    w_dataset = get_dataset("Datasets/W_DEV_dataset.pickle")
+    m_dataset = get_dataset("Datasets/M_DEV_dataset.pickle")
         
-    model = LogisticRegression(penalty='l1', random_state=5)
-    X = get_selectedFeatures(dataset["data"], selection)
-    y = dataset["target"]
-
-    model.fit(X, y)
-    pred = model.predict(observation.reshape(1,-1))
+    # get predictions for both
+    w_pred = _pred(w_dataset, observation, selection)
+    m_pred = _pred(m_dataset, observation, selection)
 
     print "\n"
     c.print_original_sents()
 
-    print " EXPECTED:  ", get_text_label(c.get_label()), "    PREDICTED:   ", get_text_label(pred)
+    print "     You EXPECTED:  ", get_text_label(c.get_label())
+    print "   Wiki PREDICTED:  ", get_text_label(w_pred), "\n Martin PREDICTED:  ", get_text_label(m_pred)
     print "------------------------------------------------------------------------------------------\n\n"    
     
-    return get_text_label(pred)
+
+
+def _pred(dataset, observation, selection):
+    
+    X_train = get_selectedFeatures(dataset["data"], selection)
+    y = dataset["target"]
+    
+    observation = observation[selection]
+    #DATA SCALING!
+    scaler = preprocessing.MinMaxScaler().fit(X_train)
+    X_train = scaler.transform(X_train)
+    observation = scaler.transform([np.array(observation)])
+    
+    model = LogisticRegression(penalty='l1', random_state=5)
+    model.fit(X_train, y)
+
+    pred = model.predict(observation)
+    return pred
     
     
 def DIY_selection(selection=[0,1,2,3]):
